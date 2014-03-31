@@ -18,14 +18,121 @@
     <![endif]-->
   </head>
   <body>
-    <h1>Hello, world!</h1>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand">Trabajo</a>
+        </div>
+        <div class="navbar-collapse">
+          <div class="nav navbar-nav">
+            <div class="btn-group" data-toggle="buttons">
+              <label class="btn btn-primary">
+                <input type="checkbox" name="bloom"> Filtro Bloom
+              </label>
+              <label class="btn btn-primary">
+                <input type="checkbox" name="geospatial"> Indice Geoespacial
+              </label>
+            </div>
+          </div>
+          <div class="nav navbar-nav navbar-right">
+            <div class="btn-group">
+              <button class="btn btn-primary">Start <span class="glyphicon glyphicon-play"></span></button>
+              <button class="btn btn-primary">Next <span class="glyphicon glyphicon-forward"></span></button>
+            </div>
+          </div>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
 
-    <ul>
-      <li><a href="http://getbootstrap.com/getting-started/#examples" target="blank">Bootstrap</a></li>
-      <li><a href="http://startbootstrap.com/all-templates" target="blank">Templates</a></li>
-    </ul>
+    <div class="content">
+      <div class="col-md-3">
+        <h3>Sidebar</h3>
+      </div>
+      <div class="col-md-9">
+        <h2>Contenido</h2>      
+        <ul id="servers">
+          
+        </ul>
+      </div>
+    </div>
+
+    <div class="modals">
+
+    </div>
+    <!-- Templates -->
+    <script type="text/template" id="template-server">
+      <div class="panel panel-success" data-id="<%= id %>">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <span class="glyphicon glyphicon-tasks"></span>
+            Server #<%= name %>
+            <div class="pull-right">
+              <div class="btn-group btn-group-sm" style="margin-top:-5px;">
+                <button type="button" class="btn btn-success">
+                  <span class="glyphicon glyphicon-chevron-down"></span>
+                </button>
+                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                  <span class="glyphicon glyphicon-cog"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                  <li><a href="#">Nuevo Sector</a></li>
+                  <li><a href="#">Editar Filtro Bloom</a></li>
+                  <li class="divider"></li>
+                  <li><a href="#">Borrar servidor</a></li>
+                </ul>
+              </div>
+            </div>
+          </h3>
+        </div>
+        <div class="panel-body" style="display:block;">
+          <div class="filtroBloom"></div>
+          <ul class="sectores"></ul>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/template" id="template-sector">
+      <div class="panel panel-primary" data-id="<%= id %>">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <span class="glyphicon glyphicon-hdd"></span>
+            Sector #<%= name %>
+            <div class="pull-right">
+              <div class="btn-group btn-group-sm" style="margin-top:-5px;">
+                <button type="button" class="btn btn-primary">
+                  <span class="glyphicon glyphicon-chevron-down"></span>
+                </button>
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                  <span class="glyphicon glyphicon-cog"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                  <li><a href="#">Vaciar Datos</a></li>
+                  <li class="divider"></li>
+                  <li><a href="#">Borrar sector</a></li>
+                </ul>
+              </div>
+            </div>
+          </h3>
+        </div>
+        <div class="panel-body">
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="<%= porcentaje %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= porcentaje %>%;">
+              <%= porcentaje %>%
+            </div>
+          </div>
+          <ul class="data">
+          </ul>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/template" id="template-filtro">
+      Filtro Bloom 0 1 2 3 4 5 6 7 8 9
+    </script>
+    <!-- -->
 
     <script src="js/jquery.min.js"></script>
+    <script src="js/underscore-min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/script.js"></script>
   </body>

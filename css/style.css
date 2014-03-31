@@ -1,0 +1,43 @@
+
+/* ---- Nav Bar ------- */
+
+.nav.navbar-nav .btn-group{
+	margin-top:10px;
+}
+
+.nav.navbar-nav.navbar-right .btn-group{
+	margin-bottom:-10px;
+}
+
+/* ----- Content ------- */
+
+.content{
+	margin-top:60px;
+	margin-right:20px;
+}
+
+.content .col-md-9 {
+	margin-top:20px;
+	border-radius: 25px;
+	background-color: #EEE;
+	padding:10px 25px;
+}
+
+.content ul#servers {
+	padding:0;
+}
+
+.content ul#servers li {
+	list-style: none;
+}
+
+.content ul#servers ul.sectores {
+	padding:5px;
+}
+
+/*.content ul#servers li ul.sectores li {
+	list-style: none;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: #66A366;
+}*/
