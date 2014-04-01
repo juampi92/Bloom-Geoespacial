@@ -1,5 +1,10 @@
 (function(){
 
+	// Utiles
+	function isNumber(n) {
+	  return !isNaN(parseFloat(n)) && isFinite(n);
+	}
+
 	//----------------------------------------------
 	// DATO
 	//----------------------------------------------
@@ -325,6 +330,85 @@
 		this.server.render();
 	}
 
+	// Simulacion
+
+	var $modals = $('#modals'),
+		
+	Estructura = {
+		$modal: null,
+		input: { $cant: null , $filtro: null , $send: null },
+		servers: new Array(),
+		init: function(){
+			this.$modal = $modals.children('#newServer');
+			this.$modal.modal({keyboard: true, show:false});
+			this.input.$cant = this.$modal.find('input[name="cant"]');
+			this.input.$filtro = this.$modal.find('input[name="filtro"]');
+			this.input.$send = this.$modal.find('.modal-footer button');
+
+			this.onClickEvents();
+		},
+		getServer: function(id){
+			return this.servers[id];
+		},
+		onClickEvents: function(){
+			var self = this;
+
+			this.$modal.on('shown.bs.modal', function(e){ self.input.$cant.focus(); });
+
+			$('button[role="addServer"]').click(function(){
+				self.popUp();
+			});
+			this.input.$send.on('click',function(e){
+				e.preventDefault();
+				if ( self.validate() ) {
+					self.addServers();
+					self.popDown();
+				}
+			});
+		},
+		popUp: function(){
+			this.$modal.modal('show');
+			this.input.$cant.val('');
+			this.input.$filtro.val(15);
+		},
+		popDown: function(){
+			this.$modal.modal('hide');
+		},
+		validate: function(){
+			var success = true;
+			if ( !isNumber(this.input.$cant.val()) ) {
+				success = false;
+				this.input.$cant.parent().addClass('has-error');
+			} else
+				this.input.$cant.parent().addClass('has-success');
+
+			if ( !isNumber(this.input.$filtro.val()) || 
+				parseInt(this.input.$filtro.val()) > 20 ||
+				parseInt(this.input.$filtro.val()) < 10
+			) {
+				success = false;
+				this.input.$filtro.parent().addClass('has-error');
+			} else {
+				this.input.$filtro.parent().addClass('has-success');
+			}
+
+			return success;
+		},
+		addServers: function(){
+			var filterSize = parseInt(this.input.$filtro.val());
+			for (var i = 0; i < parseInt(this.input.$cant.val()); i++) {
+				var server = new Server(),
+					filtro = new BloomFilter(filterSize),
+					bloomServer = new BloomServer( server , filtro );
+				this.servers.push( bloomServer );
+				bloomServer.render();
+			};
+		}
+	};
+
+	Estructura.init();
+
+	
 
 	// Ejecución test:
 	var srvr = new Server();
@@ -339,5 +423,26 @@
 	srvr.sectors[1].write(data);
 
 	bloomSrvr.render();
+
+	// Listeners
+	(function(){
+		// Acordeon
+		$('ul#servers').on('click','button[role="acordeon"]',function(){
+			var $this = $(this),
+				$icon = $this.children('span'),
+				$cont = $this.parent().parent().parent().parent().next(),
+				toggleOff = $cont.is(':hidden');
+
+			if ( toggleOff ){
+				// Lo activamos:
+				$icon.removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+				$cont.slideDown('slow');
+			} else {
+				// Lo desactivamos
+				$icon.removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+				$cont.slideUp('slow');
+			}
+		});
+	})();
 
 })();

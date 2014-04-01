@@ -49,14 +49,39 @@
         <h3>Sidebar</h3>
       </div>
       <div class="col-md-9">
-        <h2>Contenido</h2>      
+        <h2>Datacenter 
+          <button class="btn btn-sm btn-primary pull-right" role="addServer">
+            <span class="glyphicon glyphicon-plus"></span> Agregar servers
+          </button>
+        </h2>
         <ul id="servers">
           
         </ul>
       </div>
     </div>
 
-    <div class="modals">
+    <div id="modals">
+      <div id="newServer" tabindex="-1" role="dialog" aria-labelledby="newServer" aria-hidden="false" class="modal fade bs-modal-sm">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Crear servidores</h4>
+            </div>
+            <div class="modal-body">
+              <div style="display:none;" class="alert alert-danger"></div>
+              <div class="form-group pull-right">
+                <label> Tamaño del Filtro Bloom: <input name="filtro" type="text" class="form-control" data-toggle="tooltip" data-placement="bottom" title="Numero entre 10 y 20"/></label>
+              </div>
+              <div class="form-group">
+                <label> Cantidad de servers: <input name="cant" type="text" placeholder="Cantidad" class="form-control"/></label>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary">Crear</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
     <!-- Templates -->
@@ -68,7 +93,7 @@
             Server #<%= name %>
             <div class="pull-right">
               <div class="btn-group btn-group-sm" style="margin-top:-5px;">
-                <button type="button" class="btn btn-success">
+                <button type="button" class="btn btn-success" role="acordeon">
                   <span class="glyphicon glyphicon-chevron-down"></span>
                 </button>
                 <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
@@ -84,7 +109,7 @@
             </div>
           </h3>
         </div>
-        <div class="panel-body" style="display:block;">
+        <div class="panel-body" style="display:none;">
           <div class="filtroBloom"></div>
           <ul class="sectores"></ul>
         </div>
@@ -99,7 +124,7 @@
             Sector #<%= name %>
             <div class="pull-right">
               <div class="btn-group btn-group-sm" style="margin-top:-5px;">
-                <button type="button" class="btn btn-primary">
+                <button type="button" class="btn btn-primary" role="acordeon">
                   <span class="glyphicon glyphicon-chevron-down"></span>
                 </button>
                 <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
@@ -114,7 +139,7 @@
             </div>
           </h3>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" style="display:none;">
           <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="<%= porcentaje %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= porcentaje %>%;">
               <%= porcentaje %>%
