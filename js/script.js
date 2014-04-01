@@ -333,8 +333,9 @@
 	// Simulacion
 
 	var $modals = $('#modals'),
-		
-	Estructura = {
+	
+	// Visual
+	Servidores = {
 		$modal: null,
 		input: { $cant: null , $filtro: null , $send: null },
 		servers: new Array(),
@@ -405,24 +406,12 @@
 			};
 		}
 	};
+	Servidores.init();
 
-	Estructura.init();
+	var Sectores = {
 
-	
 
-	// Ejecución test:
-	var srvr = new Server();
-	var bloom = new BloomFilter(10);
-	var bloomSrvr = new BloomServer(srvr , bloom );
-
-	bloomSrvr.addSector( new Sector(10 , srvr) );
-	bloomSrvr.addSector( new Sector(15 , srvr) );
-	bloomSrvr.addSector( new Sector(20 , srvr) );
-
-	var data = new Data("juan",3,5);
-	srvr.sectors[1].write(data);
-
-	bloomSrvr.render();
+	};
 
 	// Listeners
 	(function(){
@@ -443,6 +432,39 @@
 				$cont.slideUp('slow');
 			}
 		});
+
+		$('ul#servers').on('click','li.hiddenButton',function(e) {
+		    e.stopPropagation();
+		    var $this = $(this);
+		    if ( !$this.hasClass('active') ) {
+		    	$this.addClass('active');
+		    	$this.children('input').val('').focus();
+		    }	
+		});
+
+		$('ul#servers').on('keypress','input',function(e) {
+		    if(e.which == 13) {
+			    e.preventDefault();
+			    var $this = $(this);
+			    console.log($this.val());
+			    $this.parent().removeClass('active');
+			}
+		});
 	})();
 
+	
+	
+	// Ejecución test:
+	var srvr = new Server();
+	var bloom = new BloomFilter(10);
+	var bloomSrvr = new BloomServer(srvr , bloom );
+
+	bloomSrvr.addSector( new Sector(10 , srvr) );
+	bloomSrvr.addSector( new Sector(15 , srvr) );
+	bloomSrvr.addSector( new Sector(20 , srvr) );
+
+	var data = new Data("juan",3,5);
+	srvr.sectors[1].write(data);
+
+	bloomSrvr.render();
 })();

@@ -41,3 +41,12 @@
 	border-radius: 5px;
 	background-color: #66A366;
 }*/
+
+.dropdown-menu li a { display:block;}
+.dropdown-menu li input.toggle { display:none;}
+.dropdown-menu li.active a { display:none;}
+.dropdown-menu li.active input.toggle { display:block;}
+
+.hiddenButton input {
+	margin-left: 4px;
+}
