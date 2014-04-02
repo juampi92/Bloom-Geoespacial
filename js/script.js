@@ -4,6 +4,7 @@
 	function isNumber(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
 	}
+	window.onbeforeunload = function(){ return "Saliendo"};
 
 	//----------------------------------------------
 	// DATO
@@ -15,6 +16,10 @@
 	}
 
 	Data.prototype.render = function(){
+		
+	}
+
+	Data.prototype.remove = function(){
 		
 	}
 
@@ -62,6 +67,8 @@
 	Sector.prototype.render = function(){
 		var self = this;
 
+		if ( this.$el ) this.$el.remove();
+
 		this.$parent = this.server.$sectores;
 
 		this.$el = $(Sector.tag);
@@ -75,6 +82,14 @@
 		this.cont.forEach( function(elem) {
 			//elem.render();
 		});
+	}
+
+	Sector.prototype.remove = function(){
+		this.cont.forEach( function(elem) {
+			elem.remove();
+		});
+		this.cont.length = 0; // Borrar el arreglo
+		if ( this.$el ) this.$el.remove();
 	}
 
 	//----------------------------------------------
@@ -130,6 +145,8 @@
 	Server.prototype.render = function(){
 		var self = this;
 
+		if ( this.$el ) this.$el.remove();
+
 		this.$el = $(Server.tag);
 		Server.$parent.append(this.$el);
 		
@@ -142,6 +159,14 @@
 		this.sectors.forEach( function(elem) {
 			elem.render();
 		});
+	}
+
+	Server.prototype.remove = function(){
+		this.sectors.forEach( function(elem) {
+			elem.remove();
+		});
+		this.sectors.length = 0; // Borrar arreglo
+		if ( this.$el) this.$el.remove();
 	}
 
 	//----------------------------------------------
@@ -293,6 +318,11 @@
 		
 	}
 
+	BloomFilter.prototype.remove = function(){
+		this.bools.length = 0;
+		this.values.length = 0;
+	}
+
 	//----------------------------------------------
 	// SERVIDOR CON FILTRO BLOOM
 	//----------------------------------------------
@@ -328,6 +358,12 @@
 
 	BloomServer.prototype.render = function(){
 		this.server.render();
+		//this.bloomf.render(this.server);
+	}
+
+	BloomServer.prototype.remove = function(){
+		this.server.remove();
+		this.bloomf.remove();
 	}
 
 	// Simulacion
@@ -401,17 +437,18 @@
 				var server = new Server(),
 					filtro = new BloomFilter(filterSize),
 					bloomServer = new BloomServer( server , filtro );
-				this.servers.push( bloomServer );
+				this.servers[server.id] = bloomServer;
 				bloomServer.render();
 			};
+		},
+		render: function(){
+			Server.$parent.empty();
+			this.servers.forEach(function(elem){
+				elem.render();
+			});
 		}
 	};
 	Servidores.init();
-
-	var Sectores = {
-
-
-	};
 
 	// Listeners
 	(function(){
@@ -433,38 +470,44 @@
 			}
 		});
 
-		$('ul#servers').on('click','li.hiddenButton',function(e) {
-		    e.stopPropagation();
-		    var $this = $(this);
-		    if ( !$this.hasClass('active') ) {
-		    	$this.addClass('active');
-		    	$this.children('input').val('').focus();
-		    }	
+		$('ul#servers').on('click','ul.dropdown-menu li',function(e) {
+			var $this = $(this);
+		    if ( $this.hasClass("hiddenButton") ) {
+		    	e.stopPropagation();			    
+			    if ( !$this.hasClass('active') ) {
+			    	$this.addClass('active');
+			    	$this.children('input').val('').focus();
+			    	$this.removeClass("has-error");
+			    }	
+		    } else {
+		    	console.log($this.html());
+		    }
 		});
 
 		$('ul#servers').on('keypress','input',function(e) {
 		    if(e.which == 13) {
 			    e.preventDefault();
 			    var $this = $(this);
-			    console.log($this.val());
-			    $this.parent().removeClass('active');
+			    switch ( $this.data('tipo') ){
+			    	case "newSector":
+			    		if ( $this.val() != '' &&
+			    			 isNumber($this.val()) &&
+			    			 parseInt($this.val()) > 0
+			    			) 
+			    		{
+				    		$this.parent().removeClass('active');
+				    		var bloomSrvr = Servidores.getServer( parseInt($this.data('id')) ),
+				    			srvr = bloomSrvr.server,
+				    			sector = new Sector( parseInt( $this.val() ) , srvr );
+				    		bloomSrvr.addSector(sector);
+				    		sector.render();
+				    	} else {
+				    		$this.parent().addClass("has-error");
+				    	}
+			    	break;
+			    }
 			}
 		});
 	})();
 
-	
-	
-	// Ejecución test:
-	var srvr = new Server();
-	var bloom = new BloomFilter(10);
-	var bloomSrvr = new BloomServer(srvr , bloom );
-
-	bloomSrvr.addSector( new Sector(10 , srvr) );
-	bloomSrvr.addSector( new Sector(15 , srvr) );
-	bloomSrvr.addSector( new Sector(20 , srvr) );
-
-	var data = new Data("juan",3,5);
-	srvr.sectors[1].write(data);
-
-	bloomSrvr.render();
 })();

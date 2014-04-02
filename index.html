@@ -70,10 +70,10 @@
             <div class="modal-body">
               <div style="display:none;" class="alert alert-danger"></div>
               <div class="form-group pull-right">
-                <label> Tamaño del Filtro Bloom: <input name="filtro" type="text" class="form-control" data-toggle="tooltip" data-placement="bottom" title="Numero entre 10 y 20"/></label>
+                <label> Tamaño del Filtro Bloom: <input name="filtro" type="number" class="form-control" data-toggle="tooltip" data-placement="bottom" title="Numero entre 10 y 20"/></label>
               </div>
               <div class="form-group">
-                <label> Cantidad de servers: <input name="cant" type="text" placeholder="Cantidad" class="form-control"/></label>
+                <label> Cantidad de servers: <input name="cant" type="number" placeholder="Cantidad" class="form-control"/></label>
               </div>
             </div>
             <div class="modal-footer">
@@ -101,8 +101,8 @@
                 </button>
                 <ul class="dropdown-menu pull-right" role="menu">
                   <li class="hiddenButton">
-                    <a href="#">Agregar Sectores</a>
-                    <input class="toggle" type="text" placeholder="Cantidad">
+                    <a href="#">Agregar Sector</a>
+                    <input class="toggle form-control input-sm" type="text" placeholder="Tamaño" data-tipo="newSector" data-id="<%= id %>" >
                   </li>
                   <li><a href="#">Editar Filtro Bloom</a></li>
                   <li class="divider"></li>
