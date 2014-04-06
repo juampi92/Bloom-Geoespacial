@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+ 
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,161 +8,117 @@
     <title>Bloom - Geoespacial</title>
 
     <!-- Styles -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link href="css/style.css" rel="stylesheet">
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
+ 
   <body>
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <a class="navbar-brand">Trabajo</a>
-        </div>
-        <div class="navbar-collapse">
-          <div class="nav navbar-nav">
-            <div class="btn-group" data-toggle="buttons">
-              <label class="btn btn-primary">
-                <input type="checkbox" name="bloom"> Filtro Bloom
-              </label>
-              <label class="btn btn-primary">
-                <input type="checkbox" name="geospatial"> Indice Geoespacial
-              </label>
+      <div name="top-bar">
+        <div class="navbar navbar-default navbar-gradient navbar-fixed-top" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Menú</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">GeoBloom</a>
             </div>
-          </div>
-          <div class="nav navbar-nav navbar-right">
-            <div class="btn-group">
-              <button class="btn btn-primary">Start <span class="glyphicon glyphicon-play"></span></button>
-              <button class="btn btn-primary">Next <span class="glyphicon glyphicon-forward"></span></button>
-            </div>
-          </div>
-        </div><!--/.nav-collapse -->
-      </div>
-    </div>
-
-    <div class="content">
-      <div class="col-md-3">
-        <h3>Sidebar</h3>
-      </div>
-      <div class="col-md-9">
-        <h2>Datacenter 
-          <button class="btn btn-sm btn-primary pull-right" role="addServer">
-            <span class="glyphicon glyphicon-plus"></span> Agregar servers
-          </button>
-        </h2>
-        <ul id="servers">
-          
-        </ul>
-      </div>
-    </div>
-
-    <div id="modals">
-      <div id="newServer" tabindex="-1" role="dialog" aria-labelledby="newServer" aria-hidden="false" class="modal fade bs-modal-sm">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">Crear servidores</h4>
-            </div>
-            <div class="modal-body">
-              <div style="display:none;" class="alert alert-danger"></div>
-              <div class="form-group pull-right">
-                <label> Tamaño del Filtro Bloom: <input name="filtro" type="number" class="form-control" data-toggle="tooltip" data-placement="bottom" title="Numero entre 10 y 20"/></label>
-              </div>
-              <div class="form-group">
-                <label> Cantidad de servers: <input name="cant" type="number" placeholder="Cantidad" class="form-control"/></label>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary">Crear</button>
-            </div>
+            <div class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="#bloom">Bloom</a></li>
+                <li><a href="#geo">Geoespacial</a></li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="#informe">Informe</a></li>
+                <li><a href="#help">Ayuda</a></li>
+                <li><a href="#clear">Reiniciar</a></li>
+              </ul>
+            </div><!--/.nav-collapse -->
           </div>
         </div>
       </div>
-
-    </div>
-    <!-- Templates -->
-    <script type="text/template" id="template-server">
-      <div class="panel panel-success" data-id="<%= id %>">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <span class="glyphicon glyphicon-tasks"></span>
-            Server #<%= name %>
-            <div class="pull-right">
-              <div class="btn-group btn-group-sm" style="margin-top:-5px;">
-                <button type="button" class="btn btn-success" role="acordeon">
-                  <span class="glyphicon glyphicon-chevron-down"></span>
-                </button>
-                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
-                  <span class="glyphicon glyphicon-cog"></span>
-                </button>
-                <ul class="dropdown-menu pull-right" role="menu">
-                  <li class="hiddenButton">
-                    <a href="#">Agregar Sector</a>
-                    <input class="toggle form-control input-sm" type="text" placeholder="Tamaño" data-tipo="newSector" data-id="<%= id %>" >
-                  </li>
-                  <li><a href="#">Editar Filtro Bloom</a></li>
-                  <li class="divider"></li>
-                  <li><a href="#">Borrar servidor</a></li>
-                </ul>
+      <div id="content">
+        <!--***************************
+              Pestaña Inicial
+            *************************** -->
+        <div id="tab-">
+          <h1>Introducción</h1>
+        </div>
+        <!-- /Pestaña inicial -->
+        <!--***************************
+              Pestaña Filtro Bloom
+            *************************** -->
+        <div id="tab-bloom" style="display:none;">
+          <h1>Filtro Bloom</h1>
+          <div class="col-sm-3 col-xs-12">
+            <div class="gradient" name="inputs" style="margin-top:50px; margin-left: 20%; width:60%; border-radius: 5px; padding: 10px;">
+              <div style="width:100%; text-align:center; margin-top:10px;">
+                <input id="insertkey" type="text" class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="Clave">
+                <input id="insertvalue" type="text" class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="Valor">
+                <button class="btn btn-color" id="btninsert" >Insertar</button>
+              </div>
+              <div style="width:100%; text-align:center; margin-top:20px;">
+                <input id="deletkey" type="text"  class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="Clave">
+                <button class="btn btn-color" id="btndelete">Borrar</button>
+              </div>
+              <div style="width:100%;text-align:center; margin-top:20px; margin-bottom: 10px">
+                <input id="readkey" type="text"  class="form-control" style="max-width:150px; margin: auto;" placeholder="Clave">
               </div>
             </div>
-          </h3>
-        </div>
-        <div class="panel-body" style="display:none;">
-          <div class="filtroBloom"></div>
-          <ul class="sectores"></ul>
-        </div>
-      </div>
-    </script>
-
-    <script type="text/template" id="template-sector">
-      <div class="panel panel-primary" data-id="<%= id %>">
-        <div class="panel-heading">
-          <h3 class="panel-title">
-            <span class="glyphicon glyphicon-hdd"></span>
-            Sector #<%= name %>
-            <div class="pull-right">
-              <div class="btn-group btn-group-sm" style="margin-top:-5px;">
-                <button type="button" class="btn btn-primary" role="acordeon">
-                  <span class="glyphicon glyphicon-chevron-down"></span>
-                </button>
-                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                  <span class="glyphicon glyphicon-cog"></span>
-                </button>
-                <ul class="dropdown-menu pull-right" role="menu">
-                  <li><a href="#">Vaciar Datos</a></li>
-                  <li class="divider"></li>
-                  <li><a href="#">Borrar sector</a></li>
-                </ul>
-              </div>
-            </div>
-          </h3>
-        </div>
-        <div class="panel-body" style="display:none;">
-          <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="<%= porcentaje %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= porcentaje %>%;">
-              <%= porcentaje %>%
+            <div class="gradient" name="outup" style="text-align:center; margin-top:10px; margin-left:20%; width:60%; border-radius: 5px; padding: 10px;">
+              <input id="outvalue" type="text" placeholder="Valor" readonly  class="form-control" style="max-width:150px; margin: auto; margin-top:10px; margin-bottom:10px; text-align:center;">
             </div>
           </div>
-          <ul class="data">
-          </ul>
+          <div class="col-sm-6 col-xs-12">
+            <table class="gradient" id="bloomarray"  style="border-spacing: 1px; border-collapse: separate; width: 90%; margin: auto; margin-top: 110px; border-radius:5px; padding:5px;">
+                <tr id="bloomboleans"></tr>
+                <tr id="bloomvalues"></tr>
+            </table>
+            <div id="bloomdata" class="gradient" style="width: 90%; margin: auto; margin-top: 60px; border-radius: 5px; padding-top:5px; padding-bottom:5px;">
+              Aca van los datos del arreglo bloom <br>
+              Probabilidades de falsos positivos <br>
+              Resultados de las funciones hasshing <br>
+              etc...
+            </div>
+          </div>
+          <div class="col-sm-3 col-xs-12">
+            <div>
+              <ul class="nav nav-tabs" id="bloom-tabs-menu" style="">
+                <li class="active"><a data-target="diff" data-toggle="tab">Diff File</a></li>
+                <li><a data-target="database" data-toggle="tab">Database</a></li>
+              </ul>
+              <div class="tab-content" id="bloom-tabs-cont" style="background-color:white;">
+                <div class="tab-pane active" id="diff">
+                  <table id="diffile" style="width:95%;margin:auto; margin-left: 5px; margin-right: 5px;margin-top: 5px;"></table>
+                </div>
+                <div class="tab-pane" id="database">
+                  <table id="mainfile" style="width: 95%;"></table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /Filtro Bloom -->
+        <!--***************************
+              Pestaña Indice Geoespacial
+            *************************** -->
+        <div id="tab-geo" style="display:none;">
+          <h1>Indice Geoespacial</h1>
         </div>
       </div>
-    </script>
+      <!-- / Geoespacial -->
 
-    <script type="text/template" id="template-filtro">
-      Filtro Bloom 0 1 2 3 4 5 6 7 8 9
-    </script>
-    <!-- -->
-
+    <!-- Scripts -->
     <script src="js/jquery.min.js"></script>
-    <script src="js/underscore-min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>  
+    <script src="js/quadtree.js"></script>
     <script src="js/script.js"></script>
   </body>
+
 </html>

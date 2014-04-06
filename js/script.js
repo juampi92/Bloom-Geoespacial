@@ -1,177 +1,199 @@
 (function(){
-
-	// Utiles
-	function isNumber(n) {
-	  return !isNaN(parseFloat(n)) && isFinite(n);
-	}
-	window.onbeforeunload = function(){ return "Saliendo"};
+	var $eventos = $('body');
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	//---------------------CLASES, OBJETOS Y FUNCIONES--------------------------
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 
 	//----------------------------------------------
 	// DATO
 	//----------------------------------------------
-	function Data(key, value, size){
+	
+	function Data(key, value){
 		this.key = key;
 		this.value = value;
-		this.size = size;
-	}
-
-	Data.prototype.render = function(){
-		
-	}
-
-	Data.prototype.remove = function(){
-		
 	}
 
 	//----------------------------------------------
-	// SECTOR
+	// TRANSACCION
 	//----------------------------------------------
-	Sector.ultimoid = 0; // ID GENERATOR
-	function Sector(size , server) {
-		this.id = Sector.ultimoid++;
-		this.name = server.sectors.length+1;
-		this.size = size;
-		this.free = size;
-		this.server = server;
+	
+	function Transaction(stat, data){
+		this.stat = stat;
+		this.data = data;
+	}
+
+	//----------------------------------------------
+	// MAINFILE
+	//----------------------------------------------
+
+	function MainFile() {
 		this.cont = new Array();
-		this.$el = null;
-		this.$parent = null;
-		this.$data = null;
 	}
 
-	Sector.template = $('#template-sector').html();
-	Sector.tag = '<li></li>';
-	Server.tag_data = 'ul.data';
+	MainFile.prototype.read = function(key) {
+		if (this.contains(key)) {
+			var index = 0;
+			while (this.cont[index].key !== key) { index++; }
+			return this.cont[index].value;
+		}
+		return null;
+	}
 
-	Sector.prototype.write = function(data) {
-		if ((this.read(data.key) === false) && (this.free >= data.size)) {
+	MainFile.prototype.insert = function(data) {
+		if (this.contains(data.key)) {
+			var index = 0;
+			while (this.cont[index].key !== data.key) {index++}
+			this.cont[index].date = data.date;
+			this.cont[index].value = data.value;
+		}
+		else {
 			this.cont.push(data);
-			this.free = this.free - data.size;
-			return true;
+		}
+	}
+
+	MainFile.prototype.contains = function (key) {
+		for (var i = 0; i < this.cont.length; i++) {
+			if (key == this.cont[i].key)
+				return true
 		}
 		return false;
 	}
 
-	Sector.prototype.read = function(key) {
-		for (i=0; i < this.cont.length; i++) {
-			if (this.cont[i].key == key)
-				return (this.cont[i])
+	MainFile.prototype.del = function (key) {
+		var index = 0;
+		while (this.cont[index].key !== key) {index++}
+		this.cont.splice(index,1);
+	}
+
+	MainFile.prototype.reorganize = function (diffile) {
+		// Por cada elemento del Differential File
+		for (var index = 0; index < diffile.cont.length; index++) {
+			// Si es una actualizacion, actualizo
+			if (diffile.cont[index].stat == "new") {
+				this.insert(diffile.cont[index].data)
+			}
+			// Si es un borrado y el elemento existe, lo elimino
+			else if (diffile.cont[index].stat == "delete") {
+				if (this.contains(diffile.cont[index].data.key)) {
+					this.del(diffile.cont[index].data.key);
+				}
+			}
 		}
-		return false;
+		diffile.clean();
 	}
 
-	Sector.prototype.getFull = function(){
-		return  (((this.size-this.free) / this.size)*100).toFixed(1);
-	}
+	MainFile.prototype.visual = function () {
+		/*var conteiner = document.getElementById("mainfile");
 
-	Sector.prototype.render = function(){
-		var self = this;
+		if (conteiner == null) {
+			var display = document.getElementById("datavisual");
+			conteiner = document.createElement("table");
+			conteiner.id = "mainfile";
+			display.appendChild(conteiner);
+		}
+		else {
+			$("#mainfile").empty();
+		}
 
-		if ( this.$el ) this.$el.remove();
-
-		this.$parent = this.server.$sectores;
-
-		this.$el = $(Sector.tag);
-		this.$parent.append(this.$el);
-
-		var template = _.template( Sector.template , {id:this.id , name:this.name , porcentaje:this.getFull()} );
-		this.$el.html( template );
-
-		this.$data = this.$el.find( Sector.tag_data );
-
-		this.cont.forEach( function(elem) {
-			//elem.render();
-		});
-	}
-
-	Sector.prototype.remove = function(){
-		this.cont.forEach( function(elem) {
-			elem.remove();
-		});
-		this.cont.length = 0; // Borrar el arreglo
-		if ( this.$el ) this.$el.remove();
+		for (var index = 0; index < this.cont.length; index++) {
+			var fila = document.createElement("tr");
+			var key = document.createElement("td");
+			var value = document.createElement("td");
+			fila.appendChild(key);
+			fila.appendChild(value);
+			conteiner.appendChild(fila);
+			key.innerHTML(this.cont[index].key);
+			value.innerHTML(this.cont[index].value);
+		}*/
 	}
 
 	//----------------------------------------------
-	// SERVIDOR SIMPLE
+	// DIFFERENTIAL FILE
 	//----------------------------------------------
-	Server.ultimoid = 0; // ID GENERATOR
-	function Server(sectors) {
-		this.sectors = new Array();
-		if ( sectors ) this.sectors = _.union( this.sectors , sectors );
-		this.id = Server.ultimoid++;
-		this.$el = null;
-		this.$filtro = null;
-		this.$sectores = null;
+
+	function DifferentialFile() {
+		this.cont = new Array();
 	}
 
-	// Variables estáticas de la clase
-	Server.template = $('#template-server').html();
-	Server.tag = '<li></li>';
-	Server.$parent = $('ul#servers');
-	Server.tag_filtro = '.filtroBloom';
-	Server.tag_sectores = 'ul.sectores';
-
-	Server.prototype.addSector = function(sector) {
-		this.sectors.push(sector);
-	}
-
-	Server.prototype.removeSector = function(id) {
-		for (i=0; i < this.sectors.length; i++) {
-			if (this.sectors[i].id == id)
-				this.sectors.splice(i,1);
+	DifferentialFile.prototype.read = function(key) {
+		if (this.contains(key)) {
+			var index = 0;
+			while (this.cont[index].data.key !== key) { index++; }
+			return this.cont[index].data.value;
 		}
+		return null;
 	}
 
-	Server.prototype.write = function(data) {
-		if (this.read(data.key) === false)
-			for (i=0; i < this.sectors.length; i++)
-				if (this.sector[i].write(data))
-					return true;
-		return false;
-	}
-
-	Server.prototype.read = function(key) {
-		for (i=0; i < this.sectors.length; i++) {
-			var data = this.sectors[i].read(key);
-			if ( data != false)
-				return data;
+	DifferentialFile.prototype.contains = function(key) {
+		for (var index = 0; index < this.cont.length; index++) {
+			if (this.cont[index].data.key == key) { return true; }
 		}
 		return false;
 	}
 
-	//Server.prototype.get
-
-	Server.prototype.render = function(){
-		var self = this;
-
-		if ( this.$el ) this.$el.remove();
-
-		this.$el = $(Server.tag);
-		Server.$parent.append(this.$el);
-		
-		var template = _.template( Server.template , {id:this.id , name:this.id+1} );
-		this.$el.html( template );
-
-		this.$filtro = this.$el.find( Server.tag_filtro );
-		this.$sectores = this.$el.find( Server.tag_sectores );
-
-		this.sectors.forEach( function(elem) {
-			elem.render();
-		});
+	DifferentialFile.prototype.insert = function (transaction) {
+		if (this.contains(transaction.data.key)) {
+			var index = 0;
+			while (this.cont[index].data.key !== transaction.data.key) { index++; }
+			this.cont[index].stat = transaction.stat;
+			this.cont[index].data.value = transaction.data.value;
+		}
+		else {
+			this.cont.push(transaction);
+			bloom.insert(transaction.data.key);
+		}
 	}
 
-	Server.prototype.remove = function(){
-		this.sectors.forEach( function(elem) {
-			elem.remove();
-		});
-		this.sectors.length = 0; // Borrar arreglo
-		if ( this.$el) this.$el.remove();
+	DifferentialFile.prototype.visual = function() {
+		var conteiner = document.getElementById("diffile");
+
+		$("#diffile").empty();
+
+		var accion = document.createElement("th");
+		var clave = document.createElement("th");
+		var valor = document.createElement("th");
+		accion.innerHTML = "Acción";
+		clave.innerHTML = "Clave";
+		valor.innerHTML = "Valor";
+		accion.className = "datacell";
+		clave.className = "datacell";
+		valor.className = "datacell";
+		var cabezera = document.createElement("tr");
+		cabezera.className = "datarow";
+		cabezera.appendChild(accion);
+		cabezera.appendChild(clave);
+		cabezera.appendChild(valor);
+		conteiner.appendChild(cabezera);
+
+		for (var index = 0; index < this.cont.length; index++) {
+			var fila = document.createElement("tr");
+			fila.className = "datarow";
+			var stat = document.createElement("td");
+			var key = document.createElement("td");
+			var value = document.createElement("td");
+			stat.className = "datacell";
+			key.className = "datacell";
+			value.className = "datacell";
+
+			
+			stat.innerHTML = this.cont[index].stat;
+			key.innerHTML = this.cont[index].data.key;
+			value.innerHTML = this.cont[index].data.value;
+			
+			fila.appendChild(stat);
+			fila.appendChild(key);
+			fila.appendChild(value);
+			conteiner.appendChild(fila);
+		}
 	}
+
 
 	//----------------------------------------------
 	// FUNCION DE HASH - MURMUR
 	//----------------------------------------------
+	
 	function murmur(str, seed) {
 	  var m = 0x5bd1e995;
 	  var r = 24;
@@ -239,15 +261,10 @@
 	  return res;
 	}
 	 
-	function getBucket(str, buckets) {
-	  var hash = doHash(str, str.length);
-	  var bucket = hash % buckets;
-	  return bucket;
-	}
-
 	//----------------------------------------------
 	// FUNCION DE HASH - FNV1S
 	//----------------------------------------------
+	
 	function fnv1s(str) {
 	  var bytes = stringToBytes(str);
 	  var hash = FNVINIT;
@@ -279,6 +296,7 @@
 	//----------------------------------------------
 	// BLOOM FILTER
 	//----------------------------------------------
+	
 	function BloomFilter(size) {
 		this.size = size;
 		this.bools = new Array();
@@ -314,200 +332,129 @@
 			this.bools[v2] = false;
 	}
 
-	BloomFilter.prototype.render = function(){
+	BloomFilter.prototype.evaluate = function(key) {
+		var values = new Array();
+		values[0] = murmur(key)%this.size;
+		values[1] = fnv1s(key)%this.size;
+		return values;
+	}
+
+	BloomFilter.prototype.visual = function() {
+		// Ancho en % de cada casilla
+		var rowbool = document.getElementById("bloomboleans");
+		var rowvalues = document.getElementById("bloomvalues");
+
+		// Existen los arreglos, asi que borro sus hijos
+		$(rowbool).empty();
+		$(rowvalues).empty();
 		
-	}
-
-	BloomFilter.prototype.remove = function(){
-		this.bools.length = 0;
-		this.values.length = 0;
-	}
-
-	//----------------------------------------------
-	// SERVIDOR CON FILTRO BLOOM
-	//----------------------------------------------
-
-	function BloomServer(server, bloomf) {
-		this.server = server;
-		this.bloomf = bloomf;
-	}
-
-	BloomServer.prototype.write = function(data) {
-		if (this.bloomf.contains(data.key) == false) {
-			if (this.server.write(data)) {
-				this.bloomf.insert(data.key);
-				return true;
+		for (i=0; i < this.size ; i++) {
+			var casillabool = document.createElement("td");
+			casillabool.id = "casillabool"+i;
+			var casillavalue = document.createElement("td");
+			casillavalue.id = "casillavalue"+i;
+			casillavalue.className = "bloom-casilla static";
+			casillavalue.innerHTML = this.values[i];
+			if (this.bools[i]) {
+				casillabool.className = "bloom-casilla true";
 			}
+			else {
+				casillabool.className = "bloom-casilla false";
+			}
+			rowbool.appendChild(casillabool);
+			rowvalues.appendChild(casillavalue);
 		}
-		return false;
 	}
 
-	BloomServer.prototype.read = function(key) {
-		if (this.bloomf.contains(key))
-			return this.server.read(key);
-		return false;
+	BloomFilter.prototype.iluminate = function(key) {
+		this.visual();
+		if (key !== "") {
+			var values = this.evaluate(key);
+			var c1 = document.getElementById("casillabool"+values[0]);
+			var c2 = document.getElementById("casillabool"+values[1]);
+			c1.className += " iluminate";
+			c2.className += " iluminate";
+		}
 	}
 
-	BloomServer.prototype.addSector = function(sector) {
-		this.server.addSector(sector);
-	}
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	//---------------------COMPORTAMIENTOS DE LA PAGINA-------------------------
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 
-	BloomServer.prototype.removeSector = function(id) {
-		this.server.removeSector(id);
-	}
+	var main = new MainFile();
+	var diff = new DifferentialFile();
+	var bloom = new BloomFilter(20);
 
-	BloomServer.prototype.render = function(){
-		this.server.render();
-		//this.bloomf.render(this.server);
-	}
+	bloom.visual();
+	diff.visual();
+	main.visual();
 
-	BloomServer.prototype.remove = function(){
-		this.server.remove();
-		this.bloomf.remove();
-	}
-
-	// Simulacion
-
-	var $modals = $('#modals'),
+	// Navbar general
+	var $menu = $(".navbar-collapse");
 	
-	// Visual
-	Servidores = {
-		$modal: null,
-		input: { $cant: null , $filtro: null , $send: null },
-		servers: new Array(),
-		init: function(){
-			this.$modal = $modals.children('#newServer');
-			this.$modal.modal({keyboard: true, show:false});
-			this.input.$cant = this.$modal.find('input[name="cant"]');
-			this.input.$filtro = this.$modal.find('input[name="filtro"]');
-			this.input.$send = this.$modal.find('.modal-footer button');
+	function showSector( hash ) {
+		var id = hash.substr(1);
+		$eventos.trigger("tab",[id]); // No necesario
+		$eventos.trigger("tab-" + id); // Disparo un evento tab
 
-			this.onClickEvents();
-		},
-		getServer: function(id){
-			return this.servers[id];
-		},
-		onClickEvents: function(){
-			var self = this;
-
-			this.$modal.on('shown.bs.modal', function(e){ self.input.$cant.focus(); });
-
-			$('button[role="addServer"]').click(function(){
-				self.popUp();
-			});
-			this.input.$send.on('click',function(e){
-				e.preventDefault();
-				if ( self.validate() ) {
-					self.addServers();
-					self.popDown();
-				}
-			});
-		},
-		popUp: function(){
-			this.$modal.modal('show');
-			this.input.$cant.val('');
-			this.input.$filtro.val(15);
-		},
-		popDown: function(){
-			this.$modal.modal('hide');
-		},
-		validate: function(){
-			var success = true;
-			if ( !isNumber(this.input.$cant.val()) ) {
-				success = false;
-				this.input.$cant.parent().addClass('has-error');
-			} else
-				this.input.$cant.parent().addClass('has-success');
-
-			if ( !isNumber(this.input.$filtro.val()) || 
-				parseInt(this.input.$filtro.val()) > 20 ||
-				parseInt(this.input.$filtro.val()) < 10
-			) {
-				success = false;
-				this.input.$filtro.parent().addClass('has-error');
-			} else {
-				this.input.$filtro.parent().addClass('has-success');
-			}
-
-			return success;
-		},
-		addServers: function(){
-			var filterSize = parseInt(this.input.$filtro.val());
-			for (var i = 0; i < parseInt(this.input.$cant.val()); i++) {
-				var server = new Server(),
-					filtro = new BloomFilter(filterSize),
-					bloomServer = new BloomServer( server , filtro );
-				this.servers[server.id] = bloomServer;
-				bloomServer.render();
-			};
-		},
-		render: function(){
-			Server.$parent.empty();
-			this.servers.forEach(function(elem){
-				elem.render();
-			});
+		switch (showSector.valores[id]) {
+			case 1:
+				// Saco anterior
+				$menu.find('a[href=#'+showSector.selected+']').parent().removeClass("active");
+				$('#tab-'+showSector.selected).hide();
+				// Mostrar actual
+				showSector.selected = id;
+				$menu.find('a[href=#'+id+']').parent().addClass("active");
+				$('#tab-'+id).show();
+			break;
+			case 2:
+				// Show modal
+				console.log("Mostrar modal " + id);
+			break;
+			default: // does nothing
+			break;
 		}
 	};
-	Servidores.init();
+	showSector.selected = "";
+	showSector.valores = {
+		"" : 1,
+		"bloom" : 1,
+		"geo" : 1,
+		"informe": 2,
+		"help": 2,
+		"clear": 0
+	};
+	
 
 	// Listeners
 	(function(){
-		// Acordeon
-		$('ul#servers').on('click','button[role="acordeon"]',function(){
-			var $this = $(this),
-				$icon = $this.children('span'),
-				$cont = $this.parent().parent().parent().parent().next(),
-				toggleOff = $cont.is(':hidden');
+		$("#insertkey").keyup(function(){
+			bloom.iluminate($(this).val());
+		});
 
-			if ( toggleOff ){
-				// Lo activamos:
-				$icon.removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-				$cont.slideDown('slow');
-			} else {
-				// Lo desactivamos
-				$icon.removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-				$cont.slideUp('slow');
+		$("#btninsert").on("click", function()  {
+			var key = $("#insertkey").val();
+			var value = $("#insertvalue").val();
+			if (key !== "") {
+				diff.insert(new Transaction("new",new Data(key,value)));
 			}
+			diff.visual();
+			bloom.visual();
 		});
 
-		$('ul#servers').on('click','ul.dropdown-menu li',function(e) {
-			var $this = $(this);
-		    if ( $this.hasClass("hiddenButton") ) {
-		    	e.stopPropagation();			    
-			    if ( !$this.hasClass('active') ) {
-			    	$this.addClass('active');
-			    	$this.children('input').val('').focus();
-			    	$this.removeClass("has-error");
-			    }	
-		    } else {
-		    	console.log($this.html());
-		    }
-		});
+		// Solapas generales
+		$(window).on('hashchange', function() { showSector( window.location.hash ); });
+		showSector( window.location.hash );
 
-		$('ul#servers').on('keypress','input',function(e) {
-		    if(e.which == 13) {
-			    e.preventDefault();
-			    var $this = $(this);
-			    switch ( $this.data('tipo') ){
-			    	case "newSector":
-			    		if ( $this.val() != '' &&
-			    			 isNumber($this.val()) &&
-			    			 parseInt($this.val()) > 0
-			    			) 
-			    		{
-				    		$this.parent().removeClass('active');
-				    		var bloomSrvr = Servidores.getServer( parseInt($this.data('id')) ),
-				    			srvr = bloomSrvr.server,
-				    			sector = new Sector( parseInt( $this.val() ) , srvr );
-				    		bloomSrvr.addSector(sector);
-				    		sector.render();
-				    	} else {
-				    		$this.parent().addClass("has-error");
-				    	}
-			    	break;
-			    }
-			}
-		});
+		// Bloom solapas Db-Diff
+		var $bloomTabs = $("#bloom-tabs-cont");
+        $('#bloom-tabs-menu a').click(function (e) {
+          e.preventDefault();
+          $bloomTabs.find('.active').removeClass("active");
+          $bloomTabs.find('#' + $(this).data("target") ).addClass("active");
+        });
 	})();
 
 })();
