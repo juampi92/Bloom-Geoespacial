@@ -38,7 +38,7 @@ button.btn-color:focus {
 	outline: none;
 }
 
-td.bloom-casilla {
+#mid-col table td {
 	color: white;
 	text-align: center;
 	position : relative;
@@ -49,19 +49,19 @@ td.bloom-casilla {
 	border-color: gray;
 	border-radius: 6px;
 }
-td.bloom-casilla.static{ 
+#mid-col table td.static{ 
 	background: rgba(25,155,155,0.5);
 }
 
-td.bloom-casilla.false { 
+#mid-col table td.false { 
 	background-color: white;
 }
 
-td.bloom-casilla.true { 
+#mid-col table td.true { 
 	background-color: gray;
 }
 
-td.bloom-casilla.iluminate{
+#mid-col table td.iluminate{
 	border-color: #199B9B;
 	border-width: 4px;
 }

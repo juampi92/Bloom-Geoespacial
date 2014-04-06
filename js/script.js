@@ -307,6 +307,13 @@
 		}
 	}
 
+	BloomFilter.$el = $('#tab-bloom > #mid-col');
+	BloomFilter.$els = {
+		$bools: BloomFilter.$el.find('table tr:eq(0)'),
+		$values: BloomFilter.$el.find('table tr:eq(1)'),
+		$txt: BloomFilter.$el.find('p')
+	};
+
 	BloomFilter.prototype.insert = function (key) {
 		var v1 = fnv1s(key) % this.size;
 		var v2 = murmur(key) % this.size;
@@ -345,24 +352,25 @@
 		var rowvalues = document.getElementById("bloomvalues");
 
 		// Existen los arreglos, asi que borro sus hijos
-		$(rowbool).empty();
-		$(rowvalues).empty();
+		BloomFilter.$els.$bools.empty();
+		BloomFilter.$els.$values.empty();
 		
 		for (i=0; i < this.size ; i++) {
-			var casillabool = document.createElement("td");
-			casillabool.id = "casillabool"+i;
-			var casillavalue = document.createElement("td");
-			casillavalue.id = "casillavalue"+i;
-			casillavalue.className = "bloom-casilla static";
-			casillavalue.innerHTML = this.values[i];
-			if (this.bools[i]) {
-				casillabool.className = "bloom-casilla true";
-			}
-			else {
-				casillabool.className = "bloom-casilla false";
-			}
-			rowbool.appendChild(casillabool);
-			rowvalues.appendChild(casillavalue);
+			var $td_bool = $('<td></td>'),
+				$td_val = $('<td></td>');
+
+			$td_bool.attr("_id",i);
+			$td_val.attr("_id",i);
+
+			$td_val.addClass("static").html(this.values[i]);
+
+			if (this.bools[i])
+				$td_bool.addClass("true");
+			else
+				$td_bool.addClass("false");
+
+			BloomFilter.$els.$bools.append($td_bool);
+			BloomFilter.$els.$values.append($td_val);
 		}
 	}
 
@@ -370,10 +378,10 @@
 		this.visual();
 		if (key !== "") {
 			var values = this.evaluate(key);
-			var c1 = document.getElementById("casillabool"+values[0]);
-			var c2 = document.getElementById("casillabool"+values[1]);
-			c1.className += " iluminate";
-			c2.className += " iluminate";
+			
+			BloomFilter.$els.$bools.find('td[_id='+values[0]+']').addClass("iluminate");
+			BloomFilter.$els.$bools.find('td[_id='+values[1]+']').addClass("iluminate");
+			console.log(values[0],values[1]);
 		}
 	}
 
