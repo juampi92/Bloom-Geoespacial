@@ -62,7 +62,8 @@ td.bloom-casilla.true {
 }
 
 td.bloom-casilla.iluminate{
-	border-color: yellow;
+	border-color: #199B9B;
+	border-width: 4px;
 }
 
 tr.datarow {
