@@ -136,3 +136,19 @@ th.datacell {
 	border-bottom-color: #199B9B;
 	border-bottom-style: solid; 
 }
+
+/* --- Geoespacial --- */
+#tab-geo > div {
+	margin: 70px auto 0;
+	width:97%;
+}
+
+#tab-geo .gradient {
+	border-radius: 5px;
+	padding:10px;
+}
+
+#tab-geo .col-sm-9 {
+	margin-left: -5px;
+	margin-right: 5px;
+}

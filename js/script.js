@@ -385,6 +385,53 @@
 		}
 	}
 
+
+	//----------------------------------------------
+	// QUADTREE MAP
+	//----------------------------------------------
+
+	var Mapa = {
+		els: {},
+		imagen: {},
+		init: function(){
+			var self = this;
+
+			this.els.$tab = $("#tab-geo");
+			this.els.$img = this.els.$tab.find('img');
+			this.els.$data = this.els.$tab.find('.data');
+			this.els.coords = {
+				$x: this.els.$data.find('input[name="x"]'),
+				$y: this.els.$data.find('input[name="y"]'),
+				$long: this.els.$data.find('input[name="long"]'),
+				$lat: this.els.$data.find('input[name="lat"]')
+			};
+
+			this.els.$img.attr("src","assets/mundo.jpg").load(function(){
+				self.imagen.width = this.width;
+				self.imagen.height = this.height;
+			});
+
+			this.onClickEvents();
+		},
+		onClickEvents: function(){
+			var self = this;
+			Mapa.els.$img.on('mousemove',function(e){
+				var offset = $(this).offset();
+					x = (e.clientX - offset.left).toFixed(0),
+					y = (e.clientY - offset.top).toFixed(0);
+
+			    self.els.coords.$x.val (x);
+			    self.els.coords.$y.val (y);
+
+			    var long = (( x * 360 ) / self.imagen.width) - 180,
+			    	lat = (( y * 180 ) / self.imagen.height) - 90;
+			    self.els.coords.$long.val(long);
+			    self.els.coords.$lat.val(lat);
+			});
+		}
+	};
+	Mapa.init();
+
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	//---------------------COMPORTAMIENTOS DE LA PAGINA-------------------------
