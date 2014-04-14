@@ -49,6 +49,7 @@ button.btn-color:focus {
 	border-color: gray;
 	border-radius: 6px;
 }
+
 #mid-col table td.static{ 
 	background: rgba(25,155,155,0.5);
 }
@@ -62,8 +63,8 @@ button.btn-color:focus {
 }
 
 #mid-col table td.iluminate{
-	border-color: #199B9B;
-	border-width: 4px;
+	border-color: yellow;
+	border-width: 2px;
 }
 
 tr.datarow {
@@ -71,21 +72,27 @@ tr.datarow {
 	text-align: center;
 }
 
+td.datacell.iluminate {
+	background-color: rgba(25,155,155,0.5);
+}
+
+
 td.datacell {
 	background-color: white;
 	border-radius: 3px;
 	text-align: center;
-	border: 2px solid #199B9B;
+	font-weight: bold;
+	border: 2px solid gray;
 	color: black;
 	height: 25px;
 	width: 33%;
 }
 
 th.datacell {
-	background-color: #CCCCCC;
+	background-color: rgba(25,155,155,0.5);
 	border-radius: 3px;
 	text-align: center;
-	border: 2px solid black;
+	border: 2px solid gray;
 	color: white;
 	height: 25px;
 	width: 33%;
@@ -135,4 +142,17 @@ th.datacell {
 	border-bottom-width: 2px;
 	border-bottom-color: #199B9B;
 	border-bottom-style: solid; 
+}
+
+ul.nav-tabs>li>a.color {
+	color: #199B9B;
+	font-weight: bold;
+}
+
+input.invalid {
+	background:rgba(255, 0, 0, 0.5);
+}
+
+input.valid {
+	background:rgba(25,155,155,0.5);
 }

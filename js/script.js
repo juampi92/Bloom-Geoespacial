@@ -1,5 +1,5 @@
 (function(){
-	var $eventos = $('body');
+	
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	//---------------------CLASES, OBJETOS Y FUNCIONES--------------------------
@@ -7,188 +7,316 @@
 	//--------------------------------------------------------------------------
 
 	//----------------------------------------------
-	// DATO
+	// RECORD
 	//----------------------------------------------
 	
-	function Data(key, value){
+	function Record(key, value){
 		this.key = key;
 		this.value = value;
 	}
 
 	//----------------------------------------------
-	// TRANSACCION
-	//----------------------------------------------
-	
-	function Transaction(stat, data){
-		this.stat = stat;
-		this.data = data;
-	}
-
-	//----------------------------------------------
-	// MAINFILE
+	// FILE
 	//----------------------------------------------
 
-	function MainFile() {
+	function File(records, table) {
 		this.cont = new Array();
+		this.tablename = table;
+		this.size = records;
+		for (var index = 0; index < this.size; index++) {
+			this.cont.push(new Record(index,""));
+		}
+		this.visual();	
 	}
 
-	MainFile.prototype.read = function(key) {
+	File.prototype.read = function(key) {
 		if (this.contains(key)) {
 			var index = 0;
-			while (this.cont[index].key !== key) { index++; }
+			while (this.cont[index].key != key) { index++; }
 			return this.cont[index].value;
 		}
 		return null;
 	}
 
-	MainFile.prototype.insert = function(data) {
+	File.prototype.insert = function(data) {
+		// PARTE LOGICA
 		if (this.contains(data.key)) {
 			var index = 0;
-			while (this.cont[index].key !== data.key) {index++}
-			this.cont[index].date = data.date;
+			while (this.cont[index].key != data.key) { 
+				index++;
+			}
 			this.cont[index].value = data.value;
 		}
 		else {
 			this.cont.push(data);
+			this.size++;
 		}
+
+		// PARTE VISUAL
+		var fila = document.getElementById(this.tablename+data.key);
+		if (fila != null) { 
+			$(fila).empty(); 
+		}
+		else { 
+			fila = document.createElement("tr");
+			fila.id = this.tablename+data.key;
+			document.getElementById(this.tablename).appendChild(fila);
+		}
+		var key = document.createElement("td");
+		var value = document.createElement("td");
+		key.className = "datacell";
+		value.className = "datacell";
+		key.innerHTML = data.key;
+		value.innerHTML = data.value;
+		fila.appendChild(key);
+		fila.appendChild(value);
+
+		// SCROLLEAR
+		var toggle = $("#"+this.tablename+"-toggle");
+		toggle.click();	
 	}
 
-	MainFile.prototype.contains = function (key) {
-		for (var i = 0; i < this.cont.length; i++) {
-			if (key == this.cont[i].key)
-				return true
+	File.prototype.contains = function (key) {
+		for (var index = 0; index < this.size; index++) {
+			if (this.cont[index].key == key) { 
+				return true; 
+			}
 		}
 		return false;
 	}
 
-	MainFile.prototype.del = function (key) {
-		var index = 0;
-		while (this.cont[index].key !== key) {index++}
-		this.cont.splice(index,1);
-	}
-
-	MainFile.prototype.reorganize = function (diffile) {
-		// Por cada elemento del Differential File
-		for (var index = 0; index < diffile.cont.length; index++) {
-			// Si es una actualizacion, actualizo
-			if (diffile.cont[index].stat == "new") {
-				this.insert(diffile.cont[index].data)
-			}
-			// Si es un borrado y el elemento existe, lo elimino
-			else if (diffile.cont[index].stat == "delete") {
-				if (this.contains(diffile.cont[index].data.key)) {
-					this.del(diffile.cont[index].data.key);
-				}
-			}
-		}
-		diffile.clean();
-	}
-
-	MainFile.prototype.visual = function () {
-		/*var conteiner = document.getElementById("mainfile");
-
-		if (conteiner == null) {
-			var display = document.getElementById("datavisual");
-			conteiner = document.createElement("table");
-			conteiner.id = "mainfile";
-			display.appendChild(conteiner);
-		}
-		else {
-			$("#mainfile").empty();
-		}
-
-		for (var index = 0; index < this.cont.length; index++) {
-			var fila = document.createElement("tr");
-			var key = document.createElement("td");
-			var value = document.createElement("td");
-			fila.appendChild(key);
-			fila.appendChild(value);
-			conteiner.appendChild(fila);
-			key.innerHTML(this.cont[index].key);
-			value.innerHTML(this.cont[index].value);
-		}*/
-	}
-
-	//----------------------------------------------
-	// DIFFERENTIAL FILE
-	//----------------------------------------------
-
-	function DifferentialFile() {
-		this.cont = new Array();
-	}
-
-	DifferentialFile.prototype.read = function(key) {
+	File.prototype.emtpy = function (key) {
 		if (this.contains(key)) {
-			var index = 0;
-			while (this.cont[index].data.key !== key) { index++; }
-			return this.cont[index].data.value;
-		}
-		return null;
-	}
-
-	DifferentialFile.prototype.contains = function(key) {
-		for (var index = 0; index < this.cont.length; index++) {
-			if (this.cont[index].data.key == key) { return true; }
+			return (this.read(key) == "")
 		}
 		return false;
 	}
 
-	DifferentialFile.prototype.insert = function (transaction) {
-		if (this.contains(transaction.data.key)) {
-			var index = 0;
-			while (this.cont[index].data.key !== transaction.data.key) { index++; }
-			this.cont[index].stat = transaction.stat;
-			this.cont[index].data.value = transaction.data.value;
-		}
-		else {
-			this.cont.push(transaction);
-			bloom.insert(transaction.data.key);
-		}
+	File.prototype.delete = function (key) {
+		this.insert(new Record(key,""));
 	}
 
-	DifferentialFile.prototype.visual = function() {
-		var conteiner = document.getElementById("diffile");
+	File.prototype.reorganize = function (diffile) {
+		for (var index = 0; index < diffile.cont.length; index++) {
+			this.insert(diffile.cont[index]);
+		}
+		diffile.clear(0);
+	}
 
-		$("#diffile").empty();
+	File.prototype.clear = function(records) {
+		this.cont.splice(0, this.cont.length);
+		this.size = records;
+		for (var index = 0; index < this.size; index++) {
+			this.cont.push(new Record(index,""));
+		}
+		this.visual();
+	}
 
-		var accion = document.createElement("th");
+	File.prototype.visual = function () {
+		var table = document.getElementById(this.tablename);
+
+		$(table).empty();
+
 		var clave = document.createElement("th");
 		var valor = document.createElement("th");
-		accion.innerHTML = "Acción";
 		clave.innerHTML = "Clave";
 		valor.innerHTML = "Valor";
-		accion.className = "datacell";
 		clave.className = "datacell";
 		valor.className = "datacell";
 		var cabezera = document.createElement("tr");
 		cabezera.className = "datarow";
-		cabezera.appendChild(accion);
 		cabezera.appendChild(clave);
 		cabezera.appendChild(valor);
-		conteiner.appendChild(cabezera);
+		table.appendChild(cabezera);
 
 		for (var index = 0; index < this.cont.length; index++) {
 			var fila = document.createElement("tr");
-			fila.className = "datarow";
-			var stat = document.createElement("td");
 			var key = document.createElement("td");
 			var value = document.createElement("td");
-			stat.className = "datacell";
+			fila.id = this.tablename+this.cont[index].key;
+			fila.className = "datarow";
 			key.className = "datacell";
 			value.className = "datacell";
-
-			
-			stat.innerHTML = this.cont[index].stat;
-			key.innerHTML = this.cont[index].data.key;
-			value.innerHTML = this.cont[index].data.value;
-			
-			fila.appendChild(stat);
 			fila.appendChild(key);
 			fila.appendChild(value);
-			conteiner.appendChild(fila);
+			table.appendChild(fila);
+			key.innerHTML = this.cont[index].key;
+			value.innerHTML = this.cont[index].value;
 		}
 	}
 
+	File.prototype.iluminate = function(key) {
+		if (key != this.iluminated) {
+			this.desiluminate();
+			if (this.contains(key)) {
+				this.ilumined = key;
+				var fila = $("#"+this.tablename+key);
+				(fila.children()).addClass('iluminate');
+				var toggle = $("#"+this.tablename+"-toggle");
+				toggle.click();
+				// SCROLLEAR
+			}
+		}
+	}
+
+	File.prototype.desiluminate = function() {
+		if (this.ilumined != null) {
+			var fila = $("#"+this.tablename+this.ilumined);
+			(fila.children()).removeClass('iluminate');
+			this.ilumined = null;
+		}
+	}
+
+	//----------------------------------------------
+	// BLOOM FILTER
+	//----------------------------------------------
+	
+	function BloomFilter(size) {
+		this.bools = new Array();
+		this.clear(size);
+	}
+
+	BloomFilter.$el = $('#tab-bloom > #mid-col');
+	BloomFilter.$els = {
+		$bools: BloomFilter.$el.find('table tr:eq(0)'),
+		$txt: BloomFilter.$el.find('p')
+	};
+
+	BloomFilter.prototype.insert = function (key) {
+		// PARTE LOGICA
+		var v1 = fnv1s(key) % this.size;
+		var v2 = murmur(key) % this.size;
+		this.bools[v1] = this.bools[v2] = 1;
+		this.cant++;
+
+		// PARTE VISUAL
+		BloomFilter.$els.$bools.find('td[_id='+v1+']').addClass("true");
+		BloomFilter.$els.$bools.find('td[_id='+v2+']').addClass("true");
+
+		var m = document.getElementById("tammain");
+		var d = document.getElementById("tamdif");
+		var u = document.getElementById("regunused");
+		var o = document.getElementById("ocupado");
+		var f = document.getElementById("falsopositivo");
+		
+		m.innerHTML = main.size;
+		d.innerHTML = diff.size;
+		u.innerHTML = Math.round(100*(main.size - diff.size)/main.size) + "%";
+		
+		var total = 0;
+		for (var i = 0; i < this.size; i++) {
+			if (this.bools[i]) { total++;}
+		}
+		var usedbits = total/this.size;
+		o.innerHTML = Math.round(100*(usedbits)) + "%";
+		
+		var unusedrecord = (main.size - diff.size) / main.size;
+		var prob = Math.round(100*(unusedrecord*Math.pow(usedbits,2)));
+		f.innerHTML = prob + "%";
+	}
+
+	BloomFilter.prototype.contains = function (key) {
+		var v1 = fnv1s(key) % this.size;
+		var v2 = murmur(key) % this.size;
+		return (this.bools[v1] && this.bools[v2]);
+	}
+
+	BloomFilter.prototype.evaluate = function(key) {
+		var values = new Array();
+		values[0] = murmur(key)%this.size;
+		values[1] = fnv1s(key)%this.size;
+		return values;
+	}
+
+	BloomFilter.prototype.clear = function(size) {
+		this.bools.splice(0, this.bools.length);
+		this.size = size;
+		for (var index = 0; index < this.size; index++) {
+			this.bools[index] = false;
+		}
+		this.cant = 0;
+		this.ilumined = null;
+		this.visual();
+	}
+
+	BloomFilter.prototype.visual = function() {
+		// Ancho en % de cada casilla
+		var rowbool = document.getElementById("bloomboleans");
+
+		// Existen los arreglos, asi que borro sus hijos
+		BloomFilter.$els.$bools.empty();
+		
+		for (var i=0; i < this.size ; i++) {
+			var $td_bool = $('<td></td>');
+
+			$td_bool.attr("_id",i);
+
+			if (this.bools[i])
+				$td_bool.addClass("true");
+			else
+				$td_bool.addClass("false");
+
+			BloomFilter.$els.$bools.append($td_bool);
+		}
+
+		var m = document.getElementById("tammain");
+		var d = document.getElementById("tamdif");
+		var u = document.getElementById("regunused");
+		var o = document.getElementById("ocupado");
+		var f = document.getElementById("falsopositivo");
+		
+		m.innerHTML = main.size;
+		d.innerHTML = diff.size;
+		u.innerHTML = "100%";
+		o.innerHTML = "0%";
+		f.innerHTML = "0%";
+	}
+
+	BloomFilter.prototype.iluminate = function(key) {
+		if (key != this.ilumined) {
+			this.desiluminate();
+			this.ilumined = key;
+			if (key != "") {
+				var values = this.evaluate(key);
+				BloomFilter.$els.$bools.find('td[_id='+values[0]+']').addClass("iluminate");
+				BloomFilter.$els.$bools.find('td[_id='+values[1]+']').addClass("iluminate");
+				
+				var t1 = document.getElementById("h1");
+				var t2 = document.getElementById("h2");
+				t1.innerHTML = values[0];
+				t2.innerHTML = values[1];
+
+				var r = document.getElementById("resultado");
+				r.style.color = "#199B9B";
+
+				if (!this.contains(key)) {
+					r.innerHTML = "Negativo";
+				}
+				else if (diff.contains(key)) {
+					r.innerHTML = "Positivo";
+				}
+				else {
+					r.innerHTML = "Falso Positivo";
+					r.style.color = "red";
+				}
+			}
+		}
+	}
+
+	BloomFilter.prototype.desiluminate = function() {
+		if (this.ilumined != null) {
+			var values = this.evaluate(this.ilumined);
+			this.ilumined = null;
+			BloomFilter.$els.$bools.find('td[_id='+values[0]+']').removeClass("iluminate");
+			BloomFilter.$els.$bools.find('td[_id='+values[1]+']').removeClass("iluminate");
+			var t1 = document.getElementById("h1");
+			var t2 = document.getElementById("h2");
+			var r = document.getElementById("resultado");
+			t1.innerHTML = "";
+			t2.innerHTML = "";
+			r.innerHTML = "";
+		}
+	}
 
 	//----------------------------------------------
 	// FUNCION DE HASH - MURMUR
@@ -293,111 +421,217 @@
 	  return re;
 	}
 
-	//----------------------------------------------
-	// BLOOM FILTER
-	//----------------------------------------------
-	
-	function BloomFilter(size) {
-		this.size = size;
-		this.bools = new Array();
-		this.values = new Array();
-		for (var i = 0; i < size; i++) {
-			this.bools[i] = false;
-			this.values[i] = 0;
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	//-----------------------COMPORTAMIENTOS DE BLOOM---------------------------
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+
+	// FUNCIONES
+	function enrango(id) {
+		var input = $("#"+id);
+		var valor = input.val();
+		if ((!($.isNumeric( valor ))) || (valor < 0) || (valor >= main.size)) {
+			input.removeClass("valid");
+			input.addClass("invalid");
+			return false;
+		}
+		input.removeClass("invalid");
+		input.addClass("valid");
+		return true;
+	}
+
+	function reset(id) {
+		var input = $("#"+id);
+		$(input).val("");
+		input.removeClass("valid");
+		input.removeClass("invalid");
+	}
+
+	function desiluminar() {
+		main.desiluminate();
+		diff.desiluminate();
+		bloom.desiluminate();
+	}
+
+	function insertkeyinput() {
+		reset("readkey");
+		reset("deletkey");
+		reset("outvalue");
+
+		var key = $("#insertkey").val();
+
+		if (enrango("insertkey")) {
+			bloom.iluminate(key);
+			if (diff.contains(key)) { diff.iluminate(key); }
+			else { main.iluminate(key); }
+		}
+		else {
+			desiluminar();
+			if (key == "") { reset("insertkey"); }
 		}
 	}
 
-	BloomFilter.$el = $('#tab-bloom > #mid-col');
-	BloomFilter.$els = {
-		$bools: BloomFilter.$el.find('table tr:eq(0)'),
-		$values: BloomFilter.$el.find('table tr:eq(1)'),
-		$txt: BloomFilter.$el.find('p')
-	};
+	function insertvalueinput() {
+		reset("readkey");
+		reset("deletkey");
+		reset("outvalue");
 
-	BloomFilter.prototype.insert = function (key) {
-		var v1 = fnv1s(key) % this.size;
-		var v2 = murmur(key) % this.size;
-		this.bools[v1] = this.bools[v2] = 1;
-		this.values[v1]++;
-		this.values[v2]++;
+		var key = $("#insertkey").val();
+		if (key == "") { desiluminar(); }
+
+		var value = $("#insertvalue").val();
+		if (value != "") { $("#insertvalue").addClass("valid") }
+		else { $("#insertvalue").removeClass("valid") }
 	}
 
-	BloomFilter.prototype.contains = function (key) {
-		var v1 = fnv1s(key) % this.size;
-		var v2 = murmur(key) % this.size;
-		return (this.bools[v1] && this.bools[v2]);
-	}
+	function readkeyinput() {
+		reset("insertkey");
+		reset("deletkey");
+		reset("outvalue");
+		reset("insertvalue");
 
-	BloomFilter.prototype.del = function (key) {
-		var v1 = fnv1s(key) % this.size;
-		var v2 = murmur(key) % this.size;
-		this.values[v1]--;
-		this.values[v2]--;
-		if (this.values[v1] == 0)
-			this.bools[v1] = false;
-		if (this.values[v2] == 0)
-			this.bools[v2] = false;
-	}
-
-	BloomFilter.prototype.evaluate = function(key) {
-		var values = new Array();
-		values[0] = murmur(key)%this.size;
-		values[1] = fnv1s(key)%this.size;
-		return values;
-	}
-
-	BloomFilter.prototype.visual = function() {
-		// Ancho en % de cada casilla
-		var rowbool = document.getElementById("bloomboleans");
-		var rowvalues = document.getElementById("bloomvalues");
-
-		// Existen los arreglos, asi que borro sus hijos
-		BloomFilter.$els.$bools.empty();
-		BloomFilter.$els.$values.empty();
+		var key = $("#readkey").val();
 		
-		for (i=0; i < this.size ; i++) {
-			var $td_bool = $('<td></td>'),
-				$td_val = $('<td></td>');
-
-			$td_bool.attr("_id",i);
-			$td_val.attr("_id",i);
-
-			$td_val.addClass("static").html(this.values[i]);
-
-			if (this.bools[i])
-				$td_bool.addClass("true");
-			else
-				$td_bool.addClass("false");
-
-			BloomFilter.$els.$bools.append($td_bool);
-			BloomFilter.$els.$values.append($td_val);
+		if (enrango("readkey")) {
+			bloom.iluminate(key);
+			if (diff.contains(key)) {
+				diff.iluminate(key);
+				var value = diff.read(key);
+				if (value != "") {$("#outvalue").val('"'+value+'"'); }
+				else { $("#outvalue").val('VACIO'); }
+				}
+			else {
+				main.iluminate(key);
+				var value = main.read(key);
+				if (value != "") { $("#outvalue").val('"'+value+'"'); }
+				else { $("#outvalue").val('VACIO'); } 
+			}
+		}
+		else {
+			desiluminar();	
+			if (key == "") { reset("readkey"); }
 		}
 	}
 
-	BloomFilter.prototype.iluminate = function(key) {
-		this.visual();
-		if (key !== "") {
-			var values = this.evaluate(key);
+	function deletkeyinput() {
+		reset("insertkey");
+		reset("readkey");
+		reset("outvalue");
+		reset("insertvalue");
+
+		var key = $("#deletkey").val();
+
+		if (enrango("deletkey")) {
+			bloom.iluminate(key);
+			if (diff.contains(key)) { diff.iluminate(key); }				
+			else { main.iluminate(key); }
+		}
+		else {
+			desiluminar();
+			if (key == "") { reset("deletkey"); }
+		}
+	}
+
+	// VARIABLES
+	var main = new File(100,"mainfile");
+	var diff = new File(0,"diffile");
+	var bloom = new BloomFilter(19);
+
+	// LISTENERS
+	(function(){
+
+		$("#insertkey").on("change", function() {
+  			insertkeyinput();
+		});
+
+		$("#insertkey").keyup(function(){
+			insertkeyinput();
+		});
+
+		$("#insertvalue").keyup(function(){
+			insertvalueinput();
+		});
+
+		$("#insertvalue").on("change", function() {
+  			insertvalueinput();
+		});
+
+		$("#readkey").keyup(function(){
+			readkeyinput();
+		});
+
+		$("#readkey").on("change", function() {
+  			readkeyinput();
+		});
+
+		$("#deletkey").keyup(function(){
+			deletkeyinput();
+		});
+
+		$("#deletkey").on("change", function() {
+  			deletkeyinput();
+		});
+
+		$("#btninsert").on("click", function()  {
+			reset("readkey");
+			reset("deletkey");
+			reset("outvalue");
+
+			var key = $("#insertkey").val();
+			var value = $("#insertvalue").val();
+
+			if (enrango("insertkey")) {
+				if (value != "") {
+					desiluminar();
+					reset("insertkey");
+					reset("insertvalue");
+					diff.insert(new Record(key,value));
+					bloom.insert(key);
+				}
+				else {
+					// HACER ---> WARNING DE NO VALOR
+				}
+			}
+			else {
+				// HACER ---> WARNING DE KEY INVALIDA
+			}
+		});
+
+		$("#btndelete").on("click", function()  {
+			reset("readkey");
+			reset("outvalue");
+			reset("insertkey");
+			reset("insertvalue");
 			
-			BloomFilter.$els.$bools.find('td[_id='+values[0]+']').addClass("iluminate");
-			BloomFilter.$els.$bools.find('td[_id='+values[1]+']').addClass("iluminate");
-			console.log(values[0],values[1]);
-		}
-	}
+			var key = $("#deletkey").val();
+			
+			if (enrango("deletkey")) {
+				desiluminar();
+				reset("deletkey");
+				diff.delete(key);
+				bloom.insert(key);
+			}
+			else {
+				// HACER ---> WARNING DE KEY INVALIDA
+			}
+		});
+
+		$("#btnreorganize").on("click", function()  {
+			main.desiluminate();
+			main.reorganize(diff);
+			bloom.clear(19);
+		});
+		
+	})();
+
+
 
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	//---------------------COMPORTAMIENTOS DE LA PAGINA-------------------------
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
-
-	var main = new MainFile();
-	var diff = new DifferentialFile();
-	var bloom = new BloomFilter(20);
-
-	bloom.visual();
-	diff.visual();
-	main.visual();
 
 	// Navbar general
 	var $menu = $(".navbar-collapse");
@@ -436,22 +670,9 @@
 	};
 	
 
+	var $eventos = $('body');
 	// Listeners
 	(function(){
-		$("#insertkey").keyup(function(){
-			bloom.iluminate($(this).val());
-		});
-
-		$("#btninsert").on("click", function()  {
-			var key = $("#insertkey").val();
-			var value = $("#insertvalue").val();
-			if (key !== "") {
-				diff.insert(new Transaction("new",new Data(key,value)));
-			}
-			diff.visual();
-			bloom.visual();
-		});
-
 		// Solapas generales
 		$(window).on('hashchange', function() { showSector( window.location.hash ); });
 		showSector( window.location.hash );
@@ -465,4 +686,5 @@
         });
 	})();
 
+	// HACER FUNCION SCROLL TO
 })();

@@ -59,48 +59,53 @@
           <div class="col-sm-3 col-xs-12">
             <div class="gradient" name="inputs" style="margin-top:50px; margin-left: 20%; width:60%; border-radius: 5px; padding: 10px;">
               <div style="width:100%; text-align:center; margin-top:10px;">
-                <input id="insertkey" type="text" class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="Clave">
-                <input id="insertvalue" type="text" class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="Valor">
-                <button class="btn btn-color" id="btninsert" >Insertar</button>
+                <input id="insertkey" type="text" class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="ID del Registro"> </input>
+                <input id="insertvalue" type="text" class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="Valor"> </input>
+                <button type="button" class="btn btn-color" id="btninsert">Insertar</button>
               </div>
               <div style="width:100%; text-align:center; margin-top:20px;">
-                <input id="deletkey" type="text"  class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="Clave">
+                <input id="deletkey" type="text"  class="form-control" style="max-width:150px; margin: auto; margin-bottom: 5px;" placeholder="ID del Registro"> </input>
                 <button class="btn btn-color" id="btndelete">Borrar</button>
               </div>
               <div style="width:100%;text-align:center; margin-top:20px; margin-bottom: 10px">
-                <input id="readkey" type="text"  class="form-control" style="max-width:150px; margin: auto;" placeholder="Clave">
+                <input id="readkey" type="text"  class="form-control" style="max-width:150px; margin: auto;" placeholder="ID del Registro"> </input>
+               <input id="outvalue" type="text" placeholder="Valor leido" readonly  class="form-control" style="max-width:150px; margin: auto; margin-top:10px; margin-bottom:10px; text-align:center;"> </input>
               </div>
-            </div>
-            <div class="gradient" name="outup" style="text-align:center; margin-top:10px; margin-left:20%; width:60%; border-radius: 5px; padding: 10px;">
-              <input id="outvalue" type="text" placeholder="Valor" readonly  class="form-control" style="max-width:150px; margin: auto; margin-top:10px; margin-bottom:10px; text-align:center;">
             </div>
           </div>
           <div class="col-sm-6 col-xs-12" id="mid-col">
-            <table class="gradient" style="border-spacing: 1px; border-collapse: separate; width: 90%; margin: auto; margin-top: 110px; border-radius:5px; padding:5px;">
+            <p class="gradient" style="width: 90%; margin: auto; margin-top: 70px; border-radius: 5px; padding-top:5px; padding-bottom:5px;color:gray; font-weight:bold;">
+              <label style="width:32%; margin-left:5px; margin-bottom: 0px">Hashing 1: <label style="margin-bottom: 0px; color: #199B9B;" id="h1"></label> </label>
+              <label style="width:32%; margin-left:5px; margin-bottom: 0px">Hashing 2: <label style="margin-bottom: 0px; color: #199B9B;" id="h2"></label></label>
+              <label style="width:32%; margin-left:5px; margin-bottom: 0px">Resultado: <label style="margin-bottom: 0px; color: #199B9B;" id="resultado"></label></label> <br>
+            </p>
+            <table class="gradient" style="border-spacing: 1px; border-collapse: separate; width: 90%; margin: auto; margin-top: 20px; border-radius:5px; padding:5px;">
                 <tr class="bools"></tr>
                 <tr></tr>
             </table>
-            <p class="gradient" style="width: 90%; margin: auto; margin-top: 60px; border-radius: 5px; padding-top:5px; padding-bottom:5px;">
-              Aca van los datos del arreglo bloom <br>
-              Probabilidades de falsos positivos <br>
-              Resultados de las funciones hasshing <br>
-              etc...
+            <p class="gradient" style="width: 90%; margin: auto; margin-top: 20px; border-radius: 5px; padding-top:5px; padding-bottom:5px;color:gray; font-weight:bold;">
+               <label style="margin-left:5px;">Tamaño del Main File: </label> <label style="margin-bottom: 0px; color: #199B9B;" id="tammain"></label> <br>
+              <label style="margin-left:5px;">Registros en Differential File: </label> <label style="margin-bottom: 0px; color: #199B9B;" id="tamdif"></label> <br>
+              <label style="margin-left:5px;">Porcentaje de registros no actualizados: </label> <label style="margin-bottom: 0px; color: #199B9B;" id="regunused"></label> <br>
+              <label style="margin-left:5px;">Porcentaje del Bloom marcado: </label>  <label style="margin-bottom: 0px; color: #199B9B;" id="ocupado"></label><br>
+              <label style="margin-left:5px;">Probabilidad de falso positivo: </label>  <label style="margin-bottom: 0px; color: #199B9B;" id="falsopositivo"></label><br>
             </p>
           </div>
           <div class="col-sm-3 col-xs-12">
-            <div>
+            <div style="text-align: center; margin-top:50px;">
               <ul class="nav nav-tabs" id="bloom-tabs-menu" style="">
-                <li class="active"><a data-target="diff" data-toggle="tab">Differential File</a></li>
-                <li><a data-target="database" data-toggle="tab">Main File</a></li>
+                <li class="active"><a id="diffile-toggle" class="color" data-target="diff" data-toggle="tab">Differential File</a></li>
+                <li><a id="mainfile-toggle"class="color" data-target="database" data-toggle="tab">Main File</a></li>
               </ul>
-              <div class="tab-content" id="bloom-tabs-cont" style="background-color:white;">
-                <div class="tab-pane active" id="diff">
+              <div class="tab-content" id="bloom-tabs-cont" style="max-height:377px; overflow-y: scroll;">
+                <div class="tab-pane active" style="text-align:center;" id="diff">
                   <table id="diffile" style="width:95%;margin:auto; margin-left: 5px; margin-right: 5px;margin-top: 5px;"></table>
                 </div>
                 <div class="tab-pane" id="database">
-                  <table id="mainfile" style="width: 95%;"></table>
+                  <table id="mainfile" style="width:95%;margin:auto; margin-left: 5px; margin-right: 5px;margin-top: 5px;"></table>
                 </div>
               </div>
+              <button class="btn btn-color" style="margin-top:10px;" id="btnreorganize">Reorganizar</button>
             </div>
           </div>
         </div>
