@@ -627,6 +627,179 @@
 
 
 
+
+	//----------------------------------------------
+	// QUADTREE MAP
+	//----------------------------------------------
+
+	function getPosition(element) {
+	    var xPosition = 0;
+	    var yPosition = 0;
+	      
+	    while (element) {
+	        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+	        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+	        element = element.offsetParent;
+	    }
+	    return { x: xPosition, y: yPosition };
+	}
+
+	var Mapa = {
+		els: {},
+		imagen: {},
+		canvas:{},
+		precision: 3,
+		quads: [],
+		init: function(){
+			var self = this;
+
+			this.els.$tab = $("#tab-geo");
+			this.els.$img = this.els.$tab.find('img');
+			this.els.canvas = document.getElementById('canvas');
+			this.els.$data = this.els.$tab.find('.data');
+			this.els.$values = this.els.$data.find('ul');
+			this.els.$precision = this.els.$data.find('input[name="precision"]');
+			this.els.$opacidad = this.els.$data.find('input[name="opacidad"]');
+			this.els.coords = {
+				$x: this.els.$data.find('input[name="x"]'),
+				$y: this.els.$data.find('input[name="y"]'),
+				$long: this.els.$data.find('input[name="long"]'),
+				$lat: this.els.$data.find('input[name="lat"]')
+			};
+
+			this.canvasCreate();
+
+			this.onEvents();
+		},
+		canvasCreate: function(){
+			var self = this;
+
+			this.els.$img.attr("src","assets/mundo.jpg").load(function(){
+				self.imagen.width = this.width;
+				self.imagen.height = this.height;
+
+				self.els.canvas.width = this.width;
+				self.els.canvas.height = this.height;
+
+				var $canvas = $(self.els.canvas);
+				$canvas.css( {
+					"border":"2px red solid"
+				});
+				$(this).css({
+					"margin-top":"-" + (this.height+7) + "px",
+					"margin-left":"2px",
+					"width":this.width + "px",
+					"height":this.height + "px"
+				});
+
+				self.renderCuadricula();
+			});
+		},
+		onEvents: function(){
+			var self = this;
+			
+			this.els.canvas.addEventListener("mousemove", function(e){
+				var parentPosition = getPosition(e.currentTarget),
+			    	x = e.clientX - parentPosition.x+3,
+			    	y = e.clientY - parentPosition.y+4;
+
+			    self.els.coords.$x.val (x);
+			    self.els.coords.$y.val (y);
+
+			    var coordenadas = self.toCoords(x,y),
+			    	long = coordenadas.long,
+			    	lat = coordenadas.lat;
+			    self.els.coords.$long.val(long);
+			    self.els.coords.$lat.val(lat);
+			}, false);
+
+			$(this.els.canvas).on('click',function(e){
+				var x = self.els.coords.$x.val(),
+			    	y = self.els.coords.$y.val();
+
+			    self.addElemento(x,y);
+			});
+
+
+			this.els.$precision.slider({value:this.precision , min: 1 , max: 8});
+			this.els.$opacidad.slider({value:10 , min: 0 , max: 10, step: 1});
+
+			this.els.$precision.on('slideStop',function(ev){
+				self.precision = parseInt(ev.value); // 8 prec max
+				self.render();
+			});
+			this.els.$opacidad.on('slide',function(ev){
+				$(self.els.canvas).css("opacity",parseInt(ev.value)/10);
+			});
+		},
+		canvasRestart: function(){
+			this.els.canvas.width = this.els.canvas.width;
+		},
+		addElemento: function(x,y){
+			var coords = this.toCoords(x,y),
+		    	elemento = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
+
+		    this.quads.push( elemento );
+
+		    this.renderElemento(x,y);
+
+		    var $li = $('<li></li>').html( elemento ).addClass("new");
+		    this.els.$values.prepend( $li );
+		    $li.focus().removeClass("new");
+		},
+		toCartesiano: function(long,lat){
+			return { x: (( long + 180 ) * this.imagen.width ) / 360 , y:(( lat + 90 ) * this.imagen.height) / 180 };
+		},
+		toCoords: function(x,y){
+			return { long: (( x * 360 ) / this.imagen.width) - 180 , lat: (( y * 180 ) / this.imagen.height) - 90 };
+		},
+		render: function(){
+			this.canvasRestart();
+			this.renderCuadricula();
+
+			for (var i = 0; i < this.quads.length; i++) {
+				var coords = quadtree.decode(this.quads[i]),
+					carts = this.toCartesiano(coords.origin.lng,coords.origin.lat);
+				console.log("El: " + this.quads[i] + ". Coords: " + coords.origin.lng +","+coords.origin.lat + " - Carts: " + 
+				carts.x + "," + carts.y );
+
+				this.renderElemento(carts.x,carts.y);
+			};
+		},
+		renderCuadricula: function(){
+			var its = Math.pow(2,this.precision), // iteraciones
+				x_var = this.imagen.width / its,
+				y_var = this.imagen.height / its;
+
+			var context = this.els.canvas.getContext("2d");
+
+			// Horizontal
+			for( var x = 0 ; x < this.imagen.width ; x += x_var ){
+				context.moveTo(x,0);
+				context.lineTo(x,this.imagen.height);
+			};
+			// Vertical
+			for( var y = 0 ; y < this.imagen.height ; y += y_var ){
+				context.moveTo(0,y);
+				context.lineTo(this.imagen.width,y);
+			}
+
+			context.strokeStyle = "white";
+			context.stroke();
+		},
+		renderElemento: function(x,y){
+			var context = this.els.canvas.getContext("2d");
+			context.beginPath();
+		    context.arc(x,y, 10, 0, 2 * Math.PI, false);
+		    context.fillStyle = 'red';
+		    context.fill();
+		    context.lineWidth = 1;	
+		    context.strokeStyle = 'white';
+		    context.stroke();
+		}
+	};
+	Mapa.init();
+
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	//---------------------COMPORTAMIENTOS DE LA PAGINA-------------------------

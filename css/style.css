@@ -156,3 +156,52 @@ input.invalid {
 input.valid {
 	background:rgba(25,155,155,0.5);
 }
+
+/* --- Geoespacial --- */
+#tab-geo > div {
+	margin: 70px auto 0;
+	width:97%;
+}
+
+#tab-geo .gradient {
+	border-radius: 5px;
+	padding:10px;
+}
+
+#tab-geo .col-sm-9 {
+	margin-left: -5px;
+	margin-right: 5px;
+}
+
+/* values */
+
+#tab-geo .values{
+	margin:10px 0;
+
+}
+
+#tab-geo .values ul {
+	list-style: none;
+	margin:0;
+	padding:0;
+	overflow-y: auto;
+	max-height: 250px;
+}
+
+#tab-geo .values ul li {
+	font-weight: bold;
+	padding:2px; padding-left:10px;
+	border-radius: 7px;
+	margin:2px 0;
+
+	background-color:transparent;
+    -moz-transition:background-color 2s , padding 0.5s;
+    -webkit-transition:background-color 2s , padding 0.5s;
+    -o-transition:background-color 2s , padding 0.5s;
+    transition:background-color 2s , padding 0.5s;
+}
+
+#tab-geo .values ul li.new {
+	background-color: #FFCC00;
+	padding-left:25px;
+}
