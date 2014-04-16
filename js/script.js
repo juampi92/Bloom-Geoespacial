@@ -1,4 +1,6 @@
 (function(){
+
+	var $eventos = $('body');
 	
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
@@ -155,6 +157,8 @@
 				var toggle = $("#"+this.tablename+"-toggle");
 				toggle.click();
 				// SCROLLEAR
+				var pos = key-5; if (pos < 0) pos = "";
+				$("#bloom-tabs-cont").scrollTo("#"+this.tablename+pos,800);
 			}
 		}
 	}
@@ -258,18 +262,19 @@
 
 			BloomFilter.$els.$bools.append($td_bool);
 		}
-
-		var m = document.getElementById("tammain");
-		var d = document.getElementById("tamdif");
-		var u = document.getElementById("regunused");
-		var o = document.getElementById("ocupado");
-		var f = document.getElementById("falsopositivo");
+		var contenedores = {
+			m: document.getElementById("tammain"),
+			d: document.getElementById("tamdif"),
+			u: document.getElementById("regunused"),
+			o: document.getElementById("ocupado"),
+			f: document.getElementById("falsopositivo")
+		};
 		
-		m.innerHTML = main.size;
-		d.innerHTML = diff.size;
-		u.innerHTML = "100%";
-		o.innerHTML = "0%";
-		f.innerHTML = "0%";
+		contenedores.m.innerHTML = main.size;
+		contenedores.d.innerHTML = diff.size;
+		contenedores.u.innerHTML = "100%";
+		contenedores.o.innerHTML = "0%";
+		contenedores.f.innerHTML = "0%";
 	}
 
 	BloomFilter.prototype.iluminate = function(key) {
@@ -650,6 +655,7 @@
 		canvas:{},
 		precision: 3,
 		quads: [],
+		loaded: false,
 		init: function(){
 			var self = this;
 
@@ -674,25 +680,30 @@
 		canvasCreate: function(){
 			var self = this;
 
-			this.els.$img.attr("src","assets/mundo.jpg").load(function(){
-				self.imagen.width = this.width;
-				self.imagen.height = this.height;
+			$eventos.on("tab-geo",function(){
+				if ( self.loaded ) return;
+				self.loaded = true;
 
-				self.els.canvas.width = this.width;
-				self.els.canvas.height = this.height;
+				self.els.$img.attr("src","assets/mundo.jpg").load(function(){
+					self.imagen.width = this.width;
+					self.imagen.height = this.height;
 
-				var $canvas = $(self.els.canvas);
-				$canvas.css( {
-					"border":"2px red solid"
+					self.els.canvas.width = this.width;
+					self.els.canvas.height = this.height;
+
+					var $canvas = $(self.els.canvas);
+					$canvas.css( {
+						"border":"2px red solid"
+					});
+					$(this).css({
+						"margin-top":"-" + (this.height+7) + "px",
+						"margin-left":"2px",
+						"width":this.width + "px",
+						"height":this.height + "px"
+					});
+
+					self.renderCuadricula();
 				});
-				$(this).css({
-					"margin-top":"-" + (this.height+7) + "px",
-					"margin-left":"2px",
-					"width":this.width + "px",
-					"height":this.height + "px"
-				});
-
-				self.renderCuadricula();
 			});
 		},
 		onEvents: function(){
@@ -843,7 +854,6 @@
 	};
 	
 
-	var $eventos = $('body');
 	// Listeners
 	(function(){
 		// Solapas generales
