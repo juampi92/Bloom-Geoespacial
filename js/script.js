@@ -711,8 +711,8 @@
 			
 			this.els.canvas.addEventListener("mousemove", function(e){
 				var parentPosition = getPosition(e.currentTarget),
-			    	x = e.clientX - parentPosition.x+3,
-			    	y = e.clientY - parentPosition.y+4;
+			    	x = Math.min(e.clientX - parentPosition.x+3,self.els.canvas.width),
+			    	y = Math.min(e.clientY - parentPosition.y+4,self.els.canvas.height);
 
 			    self.els.coords.$x.val (x);
 			    self.els.coords.$y.val (y);

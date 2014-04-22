@@ -205,3 +205,8 @@ input.valid {
 	background-color: #FFCC00;
 	padding-left:25px;
 }
+
+canvas {
+	/*width:0;
+	height:0;*/
+}
