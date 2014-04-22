@@ -654,7 +654,36 @@
 		imagen: {},
 		canvas:{},
 		precision: 3,
-		quads: [],
+		quads: {
+			valores: [],
+			agregar: function(indice, elemento){
+				var i;
+				for (i = 0; i < this.valores.length; i++) {
+					var index = ""+this.valores[i][0];
+					if ( index.length < indice.length )
+						for( var j = 0 ; j < indice.length - index.length ; j++ ) index = index + "0";
+
+					//console.log(indice,index,(indice <= index));
+					if ( indice < index ) break;
+					if ( indice == index ) { i++; break; }
+				};
+				this.valores.splice(i, 0,[indice,elemento]);
+			},
+			buscar: function(sector){
+				var out = new Array();
+				for (i = 0; i < this.valores.length; i++) {
+					var index = ""+this.valores[i][0];
+					if ( index.length > sector.length )
+						index = index.substr(0,sector.length);
+
+					console.log(index,sector);
+					if ( sector == index ) out.push(this.valores[i][0]);
+					if ( sector < index ) break;
+				};
+				return out;
+			}
+		},
+		mode: 0,
 		loaded: false,
 		init: function(){
 			var self = this;
@@ -663,7 +692,11 @@
 			this.els.$img = this.els.$tab.find('img');
 			this.els.canvas = document.getElementById('canvas');
 			this.els.$data = this.els.$tab.find('.data');
-			this.els.$values = this.els.$data.find('ul');
+			this.els.$modo = this.els.$data.find('.btn-group[data-toggle="buttons"]:first');
+			this.els.tabs = {
+				$values: this.els.$data.find('.values ul'),
+				$busqueda: this.els.$data.find('.busqueda ul')
+			};
 			this.els.$precision = this.els.$data.find('input[name="precision"]');
 			this.els.$opacidad = this.els.$data.find('input[name="opacidad"]');
 			this.els.coords = {
@@ -724,11 +757,29 @@
 			    self.els.coords.$lat.val(lat);
 			}, false);
 
+			this.els.$modo.on('click','label',function(e){
+				var $this = $(this),
+					selected = $this.children('input').val();
+
+				if ( selected == "agregar" ){
+					self.mode = 0;
+					self.els.tabs.$values.parent().show();
+					self.els.tabs.$busqueda.parent().hide();
+				} else {
+					self.mode = 1;
+					self.els.tabs.$busqueda.parent().show();
+					self.els.tabs.$values.parent().hide();
+				}
+			});
+
 			$(this.els.canvas).on('click',function(e){
 				var x = self.els.coords.$x.val(),
-			    	y = self.els.coords.$y.val();
+				    y = self.els.coords.$y.val();
 
-			    self.addElemento(x,y);
+				if ( self.mode == 0 )
+					self.addElemento(x,y);
+				else
+					self.buscarSector(x,y);
 			});
 
 
@@ -748,31 +799,48 @@
 		},
 		addElemento: function(x,y){
 			var coords = this.toCoords(x,y),
-		    	elemento = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
+		    	indice = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
 
-		    this.quads.push( elemento );
+		    this.quads.agregar( indice , coords );
 
 		    this.renderElemento(x,y);
 
-		    var $li = $('<li></li>').html( elemento ).addClass("new");
-		    this.els.$values.prepend( $li );
+		    var $li = $('<li></li>').html( indice ).addClass("new");
+		    this.els.tabs.$values.prepend( $li );
 		    $li.focus().removeClass("new");
 		},
+		buscarSector: function(x,y){
+			var coords = this.toCoords(x,y),
+		    	sector = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
+
+		    // Mostrar sector en algun lado
+		    this.els.tabs.$busqueda.parent().children('h4').html(sector);
+
+		    this.render();
+
+		    this.renderSector(sector);
+		    var search = this.quads.buscar(sector);
+
+			this.els.tabs.$busqueda.empty();
+		    for (var i = 0; i < search.length; i++) {
+		    	var $li = $('<li></li>').html( search[i] ).addClass("new");
+			    this.els.tabs.$busqueda.prepend( $li );
+			    $li.focus().removeClass("new");
+		    };
+		},
 		toCartesiano: function(long,lat){
-			return { x: (( long + 180 ) * this.imagen.width ) / 360 , y:(( lat + 90 ) * this.imagen.height) / 180 };
+			return { x: (( long + 180 ) * this.imagen.width ) / 360 , y:(( -lat + 90 ) * this.imagen.height) / 180 };
 		},
 		toCoords: function(x,y){
-			return { long: (( x * 360 ) / this.imagen.width) - 180 , lat: (( y * 180 ) / this.imagen.height) - 90 };
+			return { long: (( x * 360 ) / this.imagen.width) - 180 , lat: -((( y * 180 ) / this.imagen.height) - 90) };
 		},
 		render: function(){
 			this.canvasRestart();
 			this.renderCuadricula();
 
-			for (var i = 0; i < this.quads.length; i++) {
-				var coords = quadtree.decode(this.quads[i]),
+			for (var i = 0; i < this.quads.valores.length; i++) {
+				var coords = quadtree.decode(this.quads.valores[i][0]),
 					carts = this.toCartesiano(coords.origin.lng,coords.origin.lat);
-				console.log("El: " + this.quads[i] + ". Coords: " + coords.origin.lng +","+coords.origin.lat + " - Carts: " + 
-				carts.x + "," + carts.y );
 
 				this.renderElemento(carts.x,carts.y);
 			};
@@ -806,6 +874,28 @@
 		    context.fill();
 		    context.lineWidth = 1;	
 		    context.strokeStyle = 'white';
+		    context.stroke();
+		},
+		renderSector: function(sector){
+			var zona = quadtree.bbox(sector),
+				context = this.els.canvas.getContext("2d"),
+			
+				origen = this.toCartesiano(zona.minlng,zona.minlat),
+				dest = this.toCartesiano(zona.maxlng,zona.maxlat),
+
+				pos = {
+					x: origen.x ,
+					y: origen.y ,
+					w: dest.x - origen.x ,
+					h: dest.y - origen.y
+				};
+
+			context.beginPath();
+		    context.rect(pos.x,pos.y,pos.w,pos.h);
+		    /*context.fillStyle = 'yellow';
+		    context.fill();*/
+		    context.lineWidth = 3;
+		    context.strokeStyle = 'yellow';
 		    context.stroke();
 		}
 	};

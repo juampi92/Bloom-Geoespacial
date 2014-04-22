@@ -175,12 +175,11 @@ input.valid {
 
 /* values */
 
-#tab-geo .values{
+#tab-geo .data-sector{
 	margin:10px 0;
-
 }
 
-#tab-geo .values ul {
+#tab-geo .data-sector ul {
 	list-style: none;
 	margin:0;
 	padding:0;
@@ -188,7 +187,7 @@ input.valid {
 	max-height: 250px;
 }
 
-#tab-geo .values ul li {
+#tab-geo .data-sector ul li {
 	font-weight: bold;
 	padding:2px; padding-left:10px;
 	border-radius: 7px;
@@ -201,7 +200,7 @@ input.valid {
     transition:background-color 2s , padding 0.5s;
 }
 
-#tab-geo .values ul li.new {
+#tab-geo .data-sector ul li.new {
 	background-color: #FFCC00;
 	padding-left:25px;
 }
