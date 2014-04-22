@@ -5,6 +5,9 @@ body {
 	margin: 0px;
 }
 
+a {
+	cursor:pointer;
+}
 
 .gradient {
 	background:-webkit-linear-gradient(rgba(255,255,255,0.4) 0%, rgba(216,216,216,0.4)  100% );

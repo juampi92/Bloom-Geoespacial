@@ -816,7 +816,7 @@
 		    // Mostrar sector en algun lado
 		    this.els.tabs.$busqueda.parent().children('h4').html(sector);
 
-		    this.render();
+		    this.render(); // Dibujo nuevamente toda la grilla con sus puntos
 
 		    this.renderSector(sector);
 		    var search = this.quads.buscar(sector);
@@ -892,11 +892,17 @@
 
 			context.beginPath();
 		    context.rect(pos.x,pos.y,pos.w,pos.h);
-		    /*context.fillStyle = 'yellow';
-		    context.fill();*/
 		    context.lineWidth = 3;
 		    context.strokeStyle = 'yellow';
 		    context.stroke();
+		},
+		reset: function(){
+			this.quads.valores = new Array();
+
+			this.els.tabs.$values.empty();
+			this.els.tabs.$busqueda.empty();
+
+			this.render();
 		}
 	};
 	Mapa.init();
@@ -915,34 +921,16 @@
 		$eventos.trigger("tab",[id]); // No necesario
 		$eventos.trigger("tab-" + id); // Disparo un evento tab
 
-		switch (showSector.valores[id]) {
-			case 1:
-				// Saco anterior
-				$menu.find('a[href=#'+showSector.selected+']').parent().removeClass("active");
-				$('#tab-'+showSector.selected).hide();
-				// Mostrar actual
-				showSector.selected = id;
-				$menu.find('a[href=#'+id+']').parent().addClass("active");
-				$('#tab-'+id).show();
-			break;
-			case 2:
-				// Show modal
-				console.log("Mostrar modal " + id);
-			break;
-			default: // does nothing
-			break;
-		}
+		// Saco anterior
+		$menu.find('a[href=#'+showSector.selected+']').parent().removeClass("active");
+		$('#tab-'+showSector.selected).hide();
+		// Mostrar actual
+		showSector.selected = id;
+		$menu.find('a[href=#'+id+']').parent().addClass("active");
+		$('#tab-'+id).show();
+
 	};
 	showSector.selected = "";
-	showSector.valores = {
-		"" : 1,
-		"bloom" : 1,
-		"geo" : 1,
-		"informe": 2,
-		"help": 2,
-		"clear": 0
-	};
-	
 
 	// Listeners
 	(function(){
@@ -957,7 +945,18 @@
           $bloomTabs.find('.active').removeClass("active");
           $bloomTabs.find('#' + $(this).data("target") ).addClass("active");
         });
+
+        $("ul.navbar-right > li > a[rol='reiniciar']").click(function(e){
+        	switch( showSector.selected ){
+        		case "bloom":
+        			//
+        		break;
+        		case "geo":
+        			//
+        			Mapa.reset();
+        		break;
+        	}
+        });
 	})();
 
-	// HACER FUNCION SCROLL TO
 })();
