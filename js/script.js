@@ -110,6 +110,7 @@
 	}
 
 	File.prototype.clear = function(records) {
+		this.desiluminate();
 		this.cont.splice(0, this.cont.length);
 		this.size = records;
 		for (var index = 0; index < this.size; index++) {
@@ -441,6 +442,11 @@
 		main.clear(main.size);
 		diff.clear(0);
 		bloom.clear(bloom.size);
+		reset("insertkey");
+		reset("deletkey");
+		reset("outvalue");
+		reset("insertvalue");
+		reset("readkey");
 	}
 
 	function reset(id) {
@@ -461,13 +467,6 @@
 		input.removeClass("invalid");
 		input.addClass("valid");
 		return true;
-	}
-
-	function bloomreset(id) {
-		var input = $("#"+id);
-		$(input).val("");
-		input.removeClass("valid");
-		input.removeClass("invalid");
 	}
 
 	function desiluminar() {
