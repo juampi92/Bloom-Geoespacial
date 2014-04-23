@@ -1,7 +1,7 @@
 (function(){
 
 	var $eventos = $('body');
-	
+
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	//---------------------CLASES, OBJETOS Y FUNCIONES--------------------------
@@ -21,14 +21,19 @@
 	// FILE
 	//----------------------------------------------
 
-	function File(records, table) {
+	function File(records, tablename) {
+		// LOGICA
 		this.cont = new Array();
-		this.tablename = table;
 		this.size = records;
 		for (var index = 0; index < this.size; index++) {
 			this.cont.push(new Record(index,""));
 		}
-		this.visual();	
+		// VISUAL
+		this.table = $('#tab-bloom #right-col #'+tablename);
+		this.toggle = $("#"+tablename+"-toggle");
+		this.ilumined = null;
+		this.tab = $("#bloom-tabs-cont");
+		this.visual();
 	}
 
 	File.prototype.read = function(key) {
@@ -41,50 +46,48 @@
 	}
 
 	File.prototype.insert = function(data) {
-		// PARTE LOGICA
-		if (this.contains(data.key)) {
-			var index = 0;
-			while (this.cont[index].key != data.key) { 
-				index++;
-			}
-			this.cont[index].value = data.value;
-		}
-		else {
+		var index = this.getIndex(data.key);
+
+		if (index == -1) {
+			// PARTE LOGICA
 			this.cont.push(data);
 			this.size++;
+			// PARTE VISUAL
+			var fila = document.createElement("tr");
+			var key = document.createElement("td");
+			var value = document.createElement("td");
+			key.className = "datacell";
+			value.className = "datacell";
+			key.innerHTML = data.key;
+			value.innerHTML = data.value;
+			fila.appendChild(key);
+			fila.appendChild(value);
+			this.table.append(fila);
+		}
+		else {
+			// PARTE LOGICA
+			this.cont[index].value = data.value;
+			// PARTE VISUAL
+			this.table.find('tr:eq('+parseInt(parseInt(index)+1)+') td:eq(1)').empty().append(data.value);
 		}
 
-		// PARTE VISUAL
-		var fila = document.getElementById(this.tablename+data.key);
-		if (fila != null) { 
-			$(fila).empty(); 
-		}
-		else { 
-			fila = document.createElement("tr");
-			fila.id = this.tablename+data.key;
-			document.getElementById(this.tablename).appendChild(fila);
-		}
-		var key = document.createElement("td");
-		var value = document.createElement("td");
-		key.className = "datacell";
-		value.className = "datacell";
-		key.innerHTML = data.key;
-		value.innerHTML = data.value;
-		fila.appendChild(key);
-		fila.appendChild(value);
+		this.toggle.click();
+	}
 
-		// SCROLLEAR
-		var toggle = $("#"+this.tablename+"-toggle");
-		toggle.click();	
+	File.prototype.getIndex = function(key) {
+		for (var index = 0; index < this.size; index++) {
+			if (this.cont[index].key == key) { 
+				return index; 
+			}
+		}
+		return -1;
 	}
 
 	File.prototype.contains = function (key) {
-		for (var index = 0; index < this.size; index++) {
-			if (this.cont[index].key == key) { 
-				return true; 
-			}
-		}
-		return false;
+		if (this.getIndex(key) == -1)
+			return false;
+		else
+			return true; 
 	}
 
 	File.prototype.emtpy = function (key) {
@@ -103,6 +106,7 @@
 			this.insert(diffile.cont[index]);
 		}
 		diffile.clear(0);
+		this.desiluminate();
 	}
 
 	File.prototype.clear = function(records) {
@@ -115,9 +119,7 @@
 	}
 
 	File.prototype.visual = function () {
-		var table = document.getElementById(this.tablename);
-
-		$(table).empty();
+		this.table.empty();
 
 		var clave = document.createElement("th");
 		var valor = document.createElement("th");
@@ -129,44 +131,43 @@
 		cabezera.className = "datarow";
 		cabezera.appendChild(clave);
 		cabezera.appendChild(valor);
-		table.appendChild(cabezera);
+		this.table.append(cabezera);
 
 		for (var index = 0; index < this.cont.length; index++) {
 			var fila = document.createElement("tr");
 			var key = document.createElement("td");
 			var value = document.createElement("td");
-			fila.id = this.tablename+this.cont[index].key;
 			fila.className = "datarow";
 			key.className = "datacell";
 			value.className = "datacell";
 			fila.appendChild(key);
 			fila.appendChild(value);
-			table.appendChild(fila);
+			this.table.append(fila);
 			key.innerHTML = this.cont[index].key;
 			value.innerHTML = this.cont[index].value;
 		}
 	}
 
 	File.prototype.iluminate = function(key) {
-		if (key != this.iluminated) {
+		var index = this.getIndex(key);
+		var fila = this.table.find('tr:eq('+parseInt(parseInt(index)+1)+')');
+		if (fila != this.ilumined) {
 			this.desiluminate();
-			if (this.contains(key)) {
-				this.ilumined = key;
-				var fila = $("#"+this.tablename+key);
+			if (index != -1) {
+				this.ilumined = fila;
 				(fila.children()).addClass('iluminate');
-				var toggle = $("#"+this.tablename+"-toggle");
-				toggle.click();
 				// SCROLLEAR
-				var pos = key-5; if (pos < 0) pos = "";
-				$("#bloom-tabs-cont").scrollTo("#"+this.tablename+pos,800);
+				this.toggle.click();
+				var pos = key-5; if (pos < 0) pos = 0;
+				var posfila = this.table.find('tr:eq('+pos+')');
+				this.tab.scrollTo(posfila,800);
 			}
 		}
 	}
 
 	File.prototype.desiluminate = function() {
 		if (this.ilumined != null) {
-			var fila = $("#"+this.tablename+this.ilumined);
-			(fila.children()).removeClass('iluminate');
+			(this.ilumined.children()).removeClass('iluminate');
 			this.ilumined = null;
 		}
 	}
@@ -174,154 +175,156 @@
 	//----------------------------------------------
 	// BLOOM FILTER
 	//----------------------------------------------
-	
-	function BloomFilter(size) {
-		this.bools = new Array();
-		this.clear(size);
-	}
 
-	BloomFilter.$el = $('#tab-bloom > #mid-col');
-	BloomFilter.$els = {
-		$bools: BloomFilter.$el.find('table tr:eq(0)'),
-		$txt: BloomFilter.$el.find('p')
-	};
+	// VARIABLES
+	var main = new File(100,"mainfile");
+	var diff = new File(0,"diffile");
 
-	BloomFilter.prototype.insert = function (key) {
-		// PARTE LOGICA
-		var v1 = fnv1s(key) % this.size;
-		var v2 = murmur(key) % this.size;
-		this.bools[v1] = this.bools[v2] = 1;
-		this.cant++;
+	var bloom = {
+		el : {},
+		els : {},
+		contenedores : {},
+		bools : null,
+		ilumined : null,
 
-		// PARTE VISUAL
-		BloomFilter.$els.$bools.find('td[_id='+v1+']').addClass("true");
-		BloomFilter.$els.$bools.find('td[_id='+v2+']').addClass("true");
+		init: function(size) {
+			this.el = $('#tab-bloom > #mid-col');
+			this.els = {
+				bools: this.el.find('table tr:eq(0)'),
+				txt: this.el.find('p')
+			};
+			this.contenedores = {
+				m: document.getElementById("tammain"),
+				d: document.getElementById("tamdif"),
+				u: document.getElementById("regunused"),
+				o: document.getElementById("ocupado"),
+				f: document.getElementById("falsopositivo"),
+				h1: document.getElementById("h1"),
+				h2: document.getElementById("h2"),
+				r: document.getElementById("resultado")
+			};
+			this.bools = new Array();
+			this.ilumined = null;
+			this.clear(size);
+		},
 
-		var m = document.getElementById("tammain");
-		var d = document.getElementById("tamdif");
-		var u = document.getElementById("regunused");
-		var o = document.getElementById("ocupado");
-		var f = document.getElementById("falsopositivo");
-		
-		m.innerHTML = main.size;
-		d.innerHTML = diff.size;
-		u.innerHTML = Math.round(100*(main.size - diff.size)/main.size) + "%";
-		
-		var total = 0;
-		for (var i = 0; i < this.size; i++) {
-			if (this.bools[i]) { total++;}
-		}
-		var usedbits = total/this.size;
-		o.innerHTML = Math.round(100*(usedbits)) + "%";
-		
-		var unusedrecord = (main.size - diff.size) / main.size;
-		var prob = Math.round(100*(unusedrecord*Math.pow(usedbits,2)));
-		f.innerHTML = prob + "%";
-	}
+		insert : function (key) {
+			// PARTE LOGICA
+			var v1 = fnv1s(key) % this.size;
+			var v2 = murmur(key) % this.size;
+			this.bools[v1] = this.bools[v2] = 1;
+			this.cant++;
 
-	BloomFilter.prototype.contains = function (key) {
-		var v1 = fnv1s(key) % this.size;
-		var v2 = murmur(key) % this.size;
-		return (this.bools[v1] && this.bools[v2]);
-	}
+			// PARTE VISUAL
+			this.els.bools.find('td[_id='+v1+']').addClass("true");
+			this.els.bools.find('td[_id='+v2+']').addClass("true");			
+			this.contenedores.m.innerHTML = main.size;
+			this.contenedores.d.innerHTML = diff.size;
+			this.contenedores.u.innerHTML = Math.round(100*(main.size - diff.size)/main.size) + "%";
+			
+			var total = 0;
+			for (var i = 0; i < this.size; i++) {
+				if (this.bools[i]) { total++;}
+			}
+			var usedbits = total/this.size;
+			this.contenedores.o.innerHTML = Math.round(100*(usedbits)) + "%";
+			
+			var unusedrecord = (main.size - diff.size) / main.size;
+			var prob = Math.round(100*(unusedrecord*Math.pow(usedbits,2)));
+			this.contenedores.f.innerHTML = prob + "%";
+		},
 
-	BloomFilter.prototype.evaluate = function(key) {
-		var values = new Array();
-		values[0] = murmur(key)%this.size;
-		values[1] = fnv1s(key)%this.size;
-		return values;
-	}
+		contains: function (key) {
+			var v1 = fnv1s(key) % this.size;
+			var v2 = murmur(key) % this.size;
+			return (this.bools[v1] && this.bools[v2]);
+		},
 
-	BloomFilter.prototype.clear = function(size) {
-		this.bools.splice(0, this.bools.length);
-		this.size = size;
-		for (var index = 0; index < this.size; index++) {
-			this.bools[index] = false;
-		}
-		this.cant = 0;
-		this.ilumined = null;
-		this.visual();
-	}
+		evaluate : function(key) {
+			var values = new Array();
+			values[0] = murmur(key)%this.size;
+			values[1] = fnv1s(key)%this.size;
+			return values;
+		},
 
-	BloomFilter.prototype.visual = function() {
-		// Ancho en % de cada casilla
-		var rowbool = document.getElementById("bloomboleans");
-
-		// Existen los arreglos, asi que borro sus hijos
-		BloomFilter.$els.$bools.empty();
-		
-		for (var i=0; i < this.size ; i++) {
-			var $td_bool = $('<td></td>');
-
-			$td_bool.attr("_id",i);
-
-			if (this.bools[i])
-				$td_bool.addClass("true");
-			else
-				$td_bool.addClass("false");
-
-			BloomFilter.$els.$bools.append($td_bool);
-		}
-		var contenedores = {
-			m: document.getElementById("tammain"),
-			d: document.getElementById("tamdif"),
-			u: document.getElementById("regunused"),
-			o: document.getElementById("ocupado"),
-			f: document.getElementById("falsopositivo")
-		};
-		
-		contenedores.m.innerHTML = main.size;
-		contenedores.d.innerHTML = diff.size;
-		contenedores.u.innerHTML = "100%";
-		contenedores.o.innerHTML = "0%";
-		contenedores.f.innerHTML = "0%";
-	}
-
-	BloomFilter.prototype.iluminate = function(key) {
-		if (key != this.ilumined) {
+		clear : function(size) {
 			this.desiluminate();
-			this.ilumined = key;
-			if (key != "") {
-				var values = this.evaluate(key);
-				BloomFilter.$els.$bools.find('td[_id='+values[0]+']').addClass("iluminate");
-				BloomFilter.$els.$bools.find('td[_id='+values[1]+']').addClass("iluminate");
-				
-				var t1 = document.getElementById("h1");
-				var t2 = document.getElementById("h2");
-				t1.innerHTML = values[0];
-				t2.innerHTML = values[1];
+			this.bools.splice(0, this.bools.length);
+			this.size = size;
+			for (var index = 0; index < this.size; index++) {
+				this.bools[index] = false;
+			}
+			this.cant = 0;
+			this.ilumined = null;
+			this.visual();
+		},
 
-				var r = document.getElementById("resultado");
-				r.style.color = "#199B9B";
+		visual : function() {
+			// Existen los arreglos, asi que borro sus hijos
+			$(this.els.bools).empty();
+			
+			for (var i=0; i < this.size ; i++) {
+				var $td_bool = $('<td></td>');
 
-				if (!this.contains(key)) {
-					r.innerHTML = "Negativo";
+				$td_bool.attr("_id",i);
+
+				if (this.bools[i])
+					$td_bool.addClass("true");
+				else
+					$td_bool.addClass("false");
+
+				this.els.bools.append($td_bool);
+			}
+
+			this.contenedores.m.innerHTML = main.size;
+			this.contenedores.d.innerHTML = diff.size;
+			this.contenedores.u.innerHTML = "100%";
+			this.contenedores.o.innerHTML = "0%";
+			this.contenedores.f.innerHTML = "0%";
+		},
+
+		iluminate : function(key) {
+			if (key != this.ilumined) {
+				this.desiluminate();
+				this.ilumined = key;
+				if (key != "") {
+					var values = this.evaluate(key);
+					this.els.bools.find('td[_id='+values[0]+']').addClass("iluminate");
+					this.els.bools.find('td[_id='+values[1]+']').addClass("iluminate");
+					
+					this.contenedores.h1.innerHTML = values[0];
+					this.contenedores.h2.innerHTML = values[1];
+
+					this.contenedores.r.style.color = "#199B9B";
+
+					if (!this.contains(key)) {
+						this.contenedores.r.innerHTML = "Negativo";
+					}
+					else if (diff.contains(key)) {
+						this.contenedores.r.innerHTML = "Positivo";
+					}
+					else {
+						this.contenedores.r.innerHTML = "Falso Positivo";
+						this.contenedores.r.style.color = "red";
+					}
 				}
-				else if (diff.contains(key)) {
-					r.innerHTML = "Positivo";
-				}
-				else {
-					r.innerHTML = "Falso Positivo";
-					r.style.color = "red";
-				}
+			}
+		},
+
+		desiluminate : function() {
+			if (this.ilumined != null) {
+				var values = this.evaluate(this.ilumined);
+				this.ilumined = null;
+				this.els.bools.find('td[_id='+values[0]+']').removeClass("iluminate");
+				this.els.bools.find('td[_id='+values[1]+']').removeClass("iluminate");
+				this.contenedores.h1.innerHTML = "";
+				this.contenedores.h2.innerHTML = "";
+				this.contenedores.r.innerHTML = "";
 			}
 		}
 	}
 
-	BloomFilter.prototype.desiluminate = function() {
-		if (this.ilumined != null) {
-			var values = this.evaluate(this.ilumined);
-			this.ilumined = null;
-			BloomFilter.$els.$bools.find('td[_id='+values[0]+']').removeClass("iluminate");
-			BloomFilter.$els.$bools.find('td[_id='+values[1]+']').removeClass("iluminate");
-			var t1 = document.getElementById("h1");
-			var t2 = document.getElementById("h2");
-			var r = document.getElementById("resultado");
-			t1.innerHTML = "";
-			t2.innerHTML = "";
-			r.innerHTML = "";
-		}
-	}
+	bloom.init(19);
 
 	//----------------------------------------------
 	// FUNCION DE HASH - MURMUR
@@ -433,6 +436,19 @@
 	//--------------------------------------------------------------------------
 
 	// FUNCIONES
+	function bloomreset() {
+		main.clear(main.size);
+		diff.clear(0);
+		bloom.clear(bloom.size);
+	}
+
+	function reset(id) {
+		var input = $("#"+id);
+		$(input).val("");
+		input.removeClass("valid");
+		input.removeClass("invalid");
+	}
+
 	function enrango(id) {
 		var input = $("#"+id);
 		var valor = input.val();
@@ -446,7 +462,7 @@
 		return true;
 	}
 
-	function reset(id) {
+	function bloomreset(id) {
 		var input = $("#"+id);
 		$(input).val("");
 		input.removeClass("valid");
@@ -538,11 +554,6 @@
 		}
 	}
 
-	// VARIABLES
-	var main = new File(100,"mainfile");
-	var diff = new File(0,"diffile");
-	var bloom = new BloomFilter(19);
-
 	// LISTENERS
 	(function(){
 
@@ -630,9 +641,6 @@
 		
 	})();
 
-
-
-
 	//----------------------------------------------
 	// QUADTREE MAP
 	//----------------------------------------------
@@ -663,7 +671,6 @@
 					if ( index.length < indice.length )
 						for( var j = 0 ; j < indice.length - index.length ; j++ ) index = index + "0";
 
-					//console.log(indice,index,(indice <= index));
 					if ( indice < index ) break;
 					if ( indice == index ) { i++; break; }
 				};
@@ -676,7 +683,6 @@
 					if ( index.length > sector.length )
 						index = index.substr(0,sector.length);
 
-					console.log(index,sector);
 					if ( sector == index ) out.push(this.valores[i][0]);
 					if ( sector < index ) break;
 				};
