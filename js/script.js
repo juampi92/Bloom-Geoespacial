@@ -250,7 +250,8 @@
 		clear : function(size) {
 			this.desiluminate();
 			this.bools.splice(0, this.bools.length);
-			this.size = size;
+			if ( size != undefined ) this.size = size;
+
 			for (var index = 0; index < this.size; index++) {
 				this.bools[index] = false;
 			}
@@ -955,10 +956,9 @@
         $("ul.navbar-right > li > a[rol='reiniciar']").click(function(e){
         	switch( showSector.selected ){
         		case "bloom":
-        			//
+        			bloomreset();
         		break;
         		case "geo":
-        			//
         			Mapa.reset();
         		break;
         	}
