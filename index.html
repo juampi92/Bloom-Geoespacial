@@ -60,11 +60,13 @@
             </div>
 
             <hr>
-            <div style="width:80%;margin:0 auto;font-size:20px;padding-top:50px;text-align:justify;">
+            <div style="width:80%;margin:0 auto;font-size:20px;margin-top:60px;padding:5px 15px;border-radius:10px;text-align:justify;" class="gradient">
+              <h3 class="animated fadeInLeft" style="margin-left:40px">Bloom Filter</h3>
               <p>
-                Para poder dar una introducción al proyecto, primero se debe hacer una breve explicación del significado de BIG DATA. BIG DATA, en el mundo de la informática, hace referencia a cuando un sistema debe manipular un gran volumen de datos. Este tipo de sistema necesita mecanismos de manipulación, almacenado, búsqueda, análisis, etc, más eficientes que los algoritmos utilizados cotidianamente en este ámbito, ya que sus tiempos de respuesta para estos volúmenes de datos no son aceptables.</p>
+                El Filtro Bloom es una estructura de datos probabilística, para hacer el espacio más eficiente. Concebida por <i>Burton Howard Bloom</i> en 1970, el Filtro Bloom es utilizado para chequear si un elemento es miembro de un conjunto. Los falsos positivos son posibles, pero no lo son los falsos negativos. Se pueden agregar elementos al conjunto, pero no eliminarlos (salvo que se ataje con un contador de positivos para cada celda). Mientras más elementos haya, mayor es la posibilidad de falsos positivos.</p>
+              <h3 class="animated fadeInLeft" style="margin-left:40px">Geospatial Index</h3>
               <p>
-                Una vez aclarado esto se puede hablar sobre los temas que se abordarán en este proyecto. Cada sistema de bases de datos lleva implementados sus algoritmos y sus estructuras de datos para la manipulación de BIG DATA de la forma más conveniente posible. En este trabajo se verán dos de estas estructuras, los Índices Geoespaciales implementados por el sistema MongoDB, y los Filtros Bloom implementados por el sistema Cassandra. Ambas estructuras son totalmente diferentes, pero sus objetivos son los mismos: reducir los tiempos de respuesta del sistema y evitar accesos operaciones innecesarias (como buscar un dato en el lugar erróneo) las cuales tienen costos altos en lo que a tiempo se refiere.</p>
+                Un índice Geoespacial, es un índice capaz de determinar una posición geográfica a partir del mismo. Se crean utilizando una encodificación llamada GeoHash, que devuelve un número de 2 * precisión bits. Mientras mayor sea la precisión, menor es el error que existe entre el índice y las coordenadas que se quieren guardar, pero mayor es el tamaño del índice. Utilizando esta tecnología, se pueden buscar elementos dentro de cierta zona, o cercanos a otro punto de una forma eficiente.</p>
              </div>
           </div>
         </div>
