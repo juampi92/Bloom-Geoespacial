@@ -46,13 +46,26 @@
         <!--***************************
               Pestaña Inicial
             *************************** -->
-        <div id="tab-">
+        <div id="tab-" style="font-weight:bold;font-family:Calibri;">
           <h1>Introducción</h1>
-          <div class="col-sm-6">
-            <h2 class="animated fadeInRight">Barreto Juan Pablo</h2>
-          </div>
-          <div class="col-sm-6">
-            <h2 class="animated fadeInLeft">Vallejos Sebastián</h2>
+          <div style="margin-top:70px;text-align:center;">
+            <h2 style="font-size:30px;">Alumnos</h2>
+            <div style="font-size:16px;font-weight:bold;font-shadow: #333 2px 2px 2px;">
+              <div class="col-sm-6" style="text-align:right">
+                <h3 class="animated fadeInLeft">Barreto Juan Pablo</h3>
+              </div>
+              <div class="col-sm-6" style="text-align:left">
+                <h3 class="animated fadeInRight">Vallejos Sebastián</h3>
+              </div>
+            </div>
+
+            <hr>
+            <div style="width:80%;margin:0 auto;font-size:20px;padding-top:50px;text-align:justify;">
+              <p>
+                Para poder dar una introducción al proyecto, primero se debe hacer una breve explicación del significado de BIG DATA. BIG DATA, en el mundo de la informática, hace referencia a cuando un sistema debe manipular un gran volumen de datos. Este tipo de sistema necesita mecanismos de manipulación, almacenado, búsqueda, análisis, etc, más eficientes que los algoritmos utilizados cotidianamente en este ámbito, ya que sus tiempos de respuesta para estos volúmenes de datos no son aceptables.</p>
+              <p>
+                Una vez aclarado esto se puede hablar sobre los temas que se abordarán en este proyecto. Cada sistema de bases de datos lleva implementados sus algoritmos y sus estructuras de datos para la manipulación de BIG DATA de la forma más conveniente posible. En este trabajo se verán dos de estas estructuras, los Índices Geoespaciales implementados por el sistema MongoDB, y los Filtros Bloom implementados por el sistema Cassandra. Ambas estructuras son totalmente diferentes, pero sus objetivos son los mismos: reducir los tiempos de respuesta del sistema y evitar accesos operaciones innecesarias (como buscar un dato en el lugar erróneo) las cuales tienen costos altos en lo que a tiempo se refiere.</p>
+             </div>
           </div>
         </div>
         <!-- /Pestaña inicial -->
