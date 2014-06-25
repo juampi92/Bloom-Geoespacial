@@ -187,64 +187,136 @@
 		contenedores : {},
 		bools : null,
 		ilumined : null,
+		functions : {},
+		boolmurmur : null,
+		boolfnv : null,
 
-		init: function(size) {
+		init: function(size, keys, bm, bf) {
+
 			this.el = $('#tab-bloom > #mid-col');
 			this.els = {
-				bools: this.el.find('table tr:eq(0)'),
-				txt: this.el.find('p')
+				bools: this.el.find('table'),
+				txt: this.el.find(':first'),
+				resmur: null,
+				resfnv: null,
+				res: null,
+				resmod: [],
+				keymod: []
 			};
+
 			this.contenedores = {
-				m: document.getElementById("tammain"),
-				d: document.getElementById("tamdif"),
-				u: document.getElementById("regunused"),
-				o: document.getElementById("ocupado"),
-				f: document.getElementById("falsopositivo"),
-				h1: document.getElementById("h1"),
-				h2: document.getElementById("h2"),
-				r: document.getElementById("resultado")
+				m : $('#tammain'),
+				d : $('#tamdif'),
+				u : $('#regunused'),
+				o : $('#ocupado'),
+				f : $('#falsopositivo'),
+				h : {}
 			};
+
+			this.functions = keys;
 			this.bools = new Array();
 			this.ilumined = null;
+			this.boolmurmur = bm;
+			this.boolfnv = bf;
+			this.size = size;
+
+			// LIMPIO LAS COSAS EN CASO DE REINICIO
+			this.els.txt.empty();
+
+			var label;
+			var span;
+			if (this.boolmurmur) {
+				label = $('<label style="width:32%; margin-left:5px; margin-bottom: 0px">Murmur Hash: </label>');
+				span = $('<span style="margin-bottom: 0px; color: #199B9B;"> </span>');
+				this.els.murmur = span;
+				label.append(span);
+				this.els.txt.append(label);
+			}
+
+			if (this.boolfnv) {
+				label = $('<label style="width:32%; margin-left:5px; margin-bottom: 0px">FNV Hash: </label>');
+				span = $('<span style="margin-bottom: 0px; color: #199B9B;"> </span>');
+				this.els.fnv = span;
+				label.append(span);
+				this.els.txt.append(label);
+			}
+
+			var pos = 0;
+			while ( pos < this.functions.length) {
+				label = $('<label style="width:32%; margin-left:5px; margin-bottom: 0px">');
+				label.append('( ' + this.functions[pos] + ' * ' );
+				span = $('<span style="margin-bottom: 0px; color: #199B9B;"> </span>');
+				label.append(span);
+				this.els.keymod.push(span);
+				label.append(' ) Mod ' + this.size + ': </label>');
+				span = $('<span style="margin-bottom: 0px; color: #199B9B;"> </span>');
+				label.append(span);
+				this.els.resmod.push(span);
+				this.els.txt.append(label);
+				pos++
+			}
+
+			span = $('<span style="margin-bottom: 0px; color: #199B9B;"> </span>');
+			this.els.res = span;
+			label = $('<label style="width:32%; margin-left:5px; margin-bottom: 0px">Resultado: </label>');
+			label.append(span);
+			this.els.txt.append(label);
+
 			this.clear(size);
 		},
 
 		insert : function (key) {
 			// PARTE LOGICA
-			var v1 = fnv1s(key) % this.size;
-			var v2 = murmur(key) % this.size;
-			this.bools[v1] = this.bools[v2] = 1;
+			var values = this.evaluate(key);
+			for (var i = 0; i < values.length; i++) {
+				this.bools[values[i]] = true;
+			}
 			this.cant++;
 
 			// PARTE VISUAL
-			this.els.bools.find('td[_id='+v1+']').addClass("true");
-			this.els.bools.find('td[_id='+v2+']').addClass("true");			
-			this.contenedores.m.innerHTML = main.size;
-			this.contenedores.d.innerHTML = diff.size;
-			this.contenedores.u.innerHTML = Math.round(100*(main.size - diff.size)/main.size) + "%";
+			for (var i = 0; i < values.length; i++) {
+				this.els.bools.find('td[_id='+values[i]+']').addClass("true");
+			}
+
+			this.contenedores.m.empty(); this.contenedores.m.append(main.size);
+			this.contenedores.d.empty(); this.contenedores.d.append(diff.size);
+			this.contenedores.u.empty(); this.contenedores.u.append(Math.round(100*(main.size - diff.size)/main.size) + '%');
 			
 			var total = 0;
 			for (var i = 0; i < this.size; i++) {
 				if (this.bools[i]) { total++;}
 			}
 			var usedbits = total/this.size;
-			this.contenedores.o.innerHTML = Math.round(100*(usedbits)) + "%";
+			this.contenedores.o.empty(); this.contenedores.o.append(Math.round(100*(usedbits)) + "%");
 			
 			var unusedrecord = (main.size - diff.size) / main.size;
 			var prob = Math.round(100*(unusedrecord*Math.pow(usedbits,2)));
-			this.contenedores.f.innerHTML = prob + "%";
+			this.contenedores.f.empty(); this.contenedores.f.append(prob + "%");
 		},
 
 		contains: function (key) {
-			var v1 = fnv1s(key) % this.size;
-			var v2 = murmur(key) % this.size;
-			return (this.bools[v1] && this.bools[v2]);
+			var values = this.evaluate(key);
+			for (var i = 0; i < values.length; i++) {
+				if (!this.bools[values[i]]) { return false; }
+			}
+			return true;
 		},
 
 		evaluate : function(key) {
 			var values = new Array();
-			values[0] = murmur(key)%this.size;
-			values[1] = fnv1s(key)%this.size;
+			var pos = 0;
+			if (this.boolmurmur) {
+				values[pos] = murmur(key)%this.size;
+				pos++;
+			}
+			if (this.boolfnv) {
+				values[pos] = fnv1s(key)%this.size;
+				pos++;
+			}
+			for (var i = 0; i < this.functions.length; i++) {
+			  values[pos] = (this.functions[i]*key)%this.size;
+			  pos++;
+			}
 			return values;
 		},
 
@@ -252,7 +324,6 @@
 			this.desiluminate();
 			this.bools.splice(0, this.bools.length);
 			if ( size != undefined ) this.size = size;
-
 			for (var index = 0; index < this.size; index++) {
 				this.bools[index] = false;
 			}
@@ -264,25 +335,32 @@
 		visual : function() {
 			// Existen los arreglos, asi que borro sus hijos
 			$(this.els.bools).empty();
-			
+			var $row;
+			var cant = 0;
 			for (var i=0; i < this.size ; i++) {
+				if (cant == 0) {
+					$row = $('<tr></tr>');
+					this.els.bools.append($row);
+				}
 				var $td_bool = $('<td></td>');
-
 				$td_bool.attr("_id",i);
-
-				if (this.bools[i])
-					$td_bool.addClass("true");
-				else
-					$td_bool.addClass("false");
-
-				this.els.bools.append($td_bool);
+				$td_bool.addClass("false");
+				($row).append($td_bool);
+				cant++;
+				if (cant >= 19) { cant = 0;	}
 			}
 
-			this.contenedores.m.innerHTML = main.size;
-			this.contenedores.d.innerHTML = diff.size;
-			this.contenedores.u.innerHTML = "100%";
-			this.contenedores.o.innerHTML = "0%";
-			this.contenedores.f.innerHTML = "0%";
+			this.contenedores.m.empty(); this.contenedores.m.append(main.size);
+			this.contenedores.d.empty(); this.contenedores.d.append(diff.size);
+			this.contenedores.u.empty(); this.contenedores.u.append('100%');
+			this.contenedores.o.empty(); this.contenedores.o.append('0%');
+			this.contenedores.f.empty(); this.contenedores.f.append('0%');
+
+			for (var i = 0; i < this.els.resmod.length; i++) {
+				this.els.resmod[i].empty();
+				this.els.keymod[i].empty(); 
+				this.els.keymod[i].append('ID');
+			}
 		},
 
 		iluminate : function(key) {
@@ -291,23 +369,49 @@
 				this.ilumined = key;
 				if (key != "") {
 					var values = this.evaluate(key);
-					this.els.bools.find('td[_id='+values[0]+']').addClass("iluminate");
-					this.els.bools.find('td[_id='+values[1]+']').addClass("iluminate");
+					for (var i = 0; i < values.length; i++) {
+						this.els.bools.find('td[_id='+values[i]+']').addClass("iluminate");
+					}
 					
-					this.contenedores.h1.innerHTML = values[0];
-					this.contenedores.h2.innerHTML = values[1];
+					var pos = 0;
 
-					this.contenedores.r.style.color = "#199B9B";
+					if (this.boolmurmur) {
+						this.els.murmur.empty();
+						this.els.murmur.append(values[pos]);
+						pos++;
+					}
+
+					if (this.boolfnv) {
+						this.els.fnv.empty();
+						this.els.fnv.append(values[pos]);
+						pos++;
+					}
+
+					var i = 0;
+
+					while (pos < values.length) {
+						this.els.resmod[i].empty();
+						this.els.resmod[i].append(values[pos]);
+						this.els.keymod[i].empty();
+						this.els.keymod[i].append(key);
+						i++;
+						pos++;						
+					}
+
+					this.els.res.css('color','#199B9B');
 
 					if (!this.contains(key)) {
-						this.contenedores.r.innerHTML = "Negativo";
+						this.els.res.empty();
+						this.els.res.append('Negativo');
 					}
 					else if (diff.contains(key)) {
-						this.contenedores.r.innerHTML = "Positivo";
+						this.els.res.empty();
+						this.els.res.append('Positivo');
 					}
 					else {
-						this.contenedores.r.innerHTML = "Falso Positivo";
-						this.contenedores.r.style.color = "red";
+						this.els.res.empty(); 
+						this.els.res.append('Falso Positivo');
+						this.els.res.css('color','red');
 					}
 				}
 			}
@@ -317,19 +421,29 @@
 			if (this.ilumined != null) {
 				var values = this.evaluate(this.ilumined);
 				this.ilumined = null;
-				this.els.bools.find('td[_id='+values[0]+']').removeClass("iluminate");
-				this.els.bools.find('td[_id='+values[1]+']').removeClass("iluminate");
-				this.contenedores.h1.innerHTML = "";
-				this.contenedores.h2.innerHTML = "";
-				this.contenedores.r.innerHTML = "";
+				for (var i = 0; i < values.length; i++) {
+					this.els.bools.find('td[_id='+values[i]+']').removeClass("iluminate");
+				}		
+
+				if (this.boolmurmur) 
+					this.els.murmur.empty();
+				if (this.boolfnv)
+					this.els.fnv.empty();
+				this.els.res.empty();
+
+				for (var i = 0; i < this.els.resmod.length; i++) {
+					this.els.resmod[i].empty();
+					this.els.keymod[i].empty();
+					this.els.keymod[i].append('ID');		
+				}
 			}
 		}
 	}
 
-	bloom.init(19);
+	bloom.init(45,[2,4,6],false,true);
 
 	//----------------------------------------------
-	// FUNCION DE HASH - MURMUR
+	// FUNCION DE HASH - MURMUR 
 	//----------------------------------------------
 	
 	function murmur(str, seed) {
@@ -430,7 +544,7 @@
 	  }
 	  return re;
 	}
-
+	
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	//-----------------------COMPORTAMIENTOS DE BLOOM---------------------------
@@ -441,7 +555,7 @@
 	function bloomreset() {
 		main.clear(main.size);
 		diff.clear(0);
-		bloom.clear(bloom.size);
+		bloom.init(5,[82,32],true,true);
 		reset("insertkey");
 		reset("deletkey");
 		reset("outvalue");
