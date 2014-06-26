@@ -815,10 +815,14 @@
 			var self = this;
 
 			this.els.$tab = $("#tab-geo");
-			this.els.$img = this.els.$tab.find('img');
+			this.els.$img = this.els.$tab.find('img#mundo');
 			this.els.canvas = document.getElementById('canvas');
 			this.els.$data = this.els.$tab.find('.data');
 			this.els.$modo = this.els.$data.find('.btn-group[data-toggle="buttons"]:first');
+			this.els.btns = {
+				$actionBtn: this.els.$data.find('button[name="action"]'),
+				$qdtreeBtn: this.els.$data.find('button[name="actionQuadTree"]')
+			};
 			this.els.tabs = {
 				$values: this.els.$data.find('.values ul'),
 				$busqueda: this.els.$data.find('.busqueda ul')
@@ -828,9 +832,12 @@
 			this.els.coords = {
 				$x: this.els.$data.find('input[name="x"]'),
 				$y: this.els.$data.find('input[name="y"]'),
-				$long: this.els.$data.find('input[name="long"]'),
-				$lat: this.els.$data.find('input[name="lat"]')
+				$long: this.els.$data.find('output[name="long"]'),
+				$lat: this.els.$data.find('output[name="lat"]'),
+				$indice: this.els.$data.find('input[name="qdtree"]')
 			};
+
+			this.els.$loading = this.els.$tab.find('.loading');
 
 			this.canvasCreate();
 
@@ -844,17 +851,19 @@
 				self.loaded = true;
 
 				self.els.$img.attr("src","assets/mundo.jpg").load(function(){
-					self.imagen.width = this.width;
-					self.imagen.height = this.height;
+					console.log(self.els.$img.width,this.width,this);
+					self.els.$img.width = self.imagen.width = self.els.canvas.width = this.width;
+					self.els.$img.height = self.imagen.height = self.els.canvas.height = this.height;
 
-					self.els.canvas.width = this.width;
-					self.els.canvas.height = this.height;
+					self.els.$loading.remove();
 
 					var $canvas = $(self.els.canvas);
 					$canvas.css( {
-						"border":"2px red solid"
+						"border":"2px red solid",
+						"display":"inline-block"
 					});
 					$(this).css({
+						"visibility":"visible",
 						"margin-top":"-" + (this.height+7) + "px",
 						"margin-left":"2px",
 						"width":this.width + "px",
@@ -896,16 +905,25 @@
 					self.els.tabs.$busqueda.parent().show();
 					self.els.tabs.$values.parent().hide();
 				}
+				self.els.btns.$actionBtn.html( $this.data('txt') );
+				self.els.btns.$qdtreeBtn.html( $this.data('txt') );
 			});
 
 			$(this.els.canvas).on('click',function(e){
-				var x = self.els.coords.$x.val(),
-						y = self.els.coords.$y.val();
+				self.clickAction();
+			});
 
-				if ( self.mode === 0 )
-					self.addElemento(x,y);
+			$(this.els.btns.$actionBtn).on('click',function(e){
+				self.clickAction();
+			});
+			$(this.els.btns.$qdtreeBtn).on('click',function(e){
+				var $input = self.els.coords.$indice,
+					val = $input.val();
+				$input.removeClass("error");
+				if ( val && $.isNumeric(val) )
+					self.clickAction(true);
 				else
-					self.buscarSector(x,y);
+					$input.addClass("error");
 			});
 
 
@@ -913,27 +931,77 @@
 			this.els.$opacidad.slider({value:10 , min: 0 , max: 10, step: 1});
 
 			this.els.$precision.on('slideStop',function(ev){
-				self.precision = parseInt(ev.value); // 8 prec max
+				self.precision = parseInt(ev.value,10); // 8 prec max
 				self.render();
 			});
 			this.els.$opacidad.on('slide',function(ev){
-				$(self.els.canvas).css("opacity",parseInt(ev.value)/10);
+				$(self.els.canvas).css("opacity",parseInt(ev.value,10)/10);
 			});
+		},
+		clickAction: function(inQuadtree){
+			if ( !inQuadtree ) {
+				var x = this.els.coords.$x.val(),
+						y = this.els.coords.$y.val();
+
+				this.elementAction(x,y);
+			} else {
+				var indice = this.els.coords.$indice.val();
+				this.elementAction(null,null,indice);
+			}
 		},
 		canvasRestart: function(){
 			this.els.canvas.width = this.els.canvas.width;
 		},
-		addElemento: function(x,y){
-			var coords = this.toCoords(x,y),
-					indice = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
+		elementAction: function(x,y,indice){
+			var coords,_indice = null,_x,_y;
+			if ( indice === undefined ) {
+				// Especificados por las coordenadas x,y
+				coords = this.toCoords(x,y);
+				_indice = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
+				_x = x;
+				_y = y;
+			} else {
+				// Especificados por el indice geoespacial
+				coords = quadtree.decode(indice);
+				var cart = this.toCartesiano(coords.origin.lng,coords.origin.lat);
+				_indice = indice;
+				_x = cart.x >> 0;
+				_y = cart.y >> 0;
+			}
 
-				this.quads.agregar( indice , coords );
+			this._elementAction(_x,_y,_indice);
+		},
+		_elementAction: function(x,y,indice){
+			this.els.coords.$indice.val(indice);
+			this.els.coords.$x.val(x);
+			this.els.coords.$y.val(y);
 
+			var $li;
+			if ( ! this.mode ){
+				// Add new element
+				this.quads.agregar( indice , this.toCoords(x,y) );
 				this.renderElemento(x,y);
 
-				var $li = $('<li></li>').html( indice ).addClass("new");
+				$li = $('<li></li>').html( indice ).addClass("new");
 				this.els.tabs.$values.prepend( $li );
 				$li.focus().removeClass("new");
+
+			} else {
+				// Search in box
+				this.render(); // Dibujo nuevamente toda la grilla con sus puntos
+				this.renderSector(indice);
+
+				var search = this.quads.buscar(indice);
+
+				this.els.tabs.$busqueda.empty();
+
+				for (var i = 0; i < search.length; i++) {
+					$li = $('<li></li>').html( search[i] ).addClass("new");
+					this.els.tabs.$busqueda.prepend( $li );
+					$li.focus().removeClass("new");
+				}
+			}
+			
 		},
 		buscarSector: function(x,y){
 			var coords = this.toCoords(x,y),
@@ -942,10 +1010,8 @@
 				// Mostrar sector en algun lado
 				this.els.tabs.$busqueda.parent().children('h4').html(sector);
 
-				this.render(); // Dibujo nuevamente toda la grilla con sus puntos
-
-				this.renderSector(sector);
-				var search = this.quads.buscar(sector);
+				
+				
 
 			this.els.tabs.$busqueda.empty();
 				for (var i = 0; i < search.length; i++) {

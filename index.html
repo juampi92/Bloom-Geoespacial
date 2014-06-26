@@ -136,26 +136,32 @@
           <div>
             <div class="col-sm-9 gradient">
               <canvas id="canvas"></canvas>
-              <img alt="Cargando" style="width:100%;float:left;">
+              <img id="mundo" alt="Cargando" style="width:100%;float:left;visibility:hidden">
+              <div class="loading"><img src="assets/loading.gif"></div>
             </div>
             <div class="col-sm-3 gradient data">
               <div class="gradient form-inline">
                 <h3>Modo</h3>
                 <div class="btn-group" data-toggle="buttons">
-                  <label class="btn btn-primary active">
+                  <label class="btn btn-primary active" data-txt="Agregar">
                     <input type="radio" name="options" value="agregar"> Agregar
                   </label>
-                  <label class="btn btn-primary">
+                  <label class="btn btn-primary" data-txt="Buscar">
                     <input type="radio" name="options" value="buscar"> Buscar
                   </label>
                 </div>
-                <h3>Selección</h3>
+                <h4>Selección por Coordenadas</h4>
                 <b style="width:20%">X:</b> 
                   <input type="text" class="form-control" style="width:40%" name="x">
-                  <input type="text" class="form-control" style="width:40%" name="long"> <br>
+                  <output name="long"></output> <br>
                 <b style="width:20%">Y:</b> 
                   <input type="text" class="form-control" style="width:40%" name="y">
-                  <input type="text" class="form-control" style="width:40%" name="lat">
+                  <output name="lat"></output> <br>
+                <button class="btn btn-primary btn-sm" style="float:right;" name="action">Agregar</button>
+                <br><br>
+                <h4>Selección por QuadTree</h4>
+                  <input type="text" class="form-control" name="qdtree"> 
+                    <button class="btn btn-primary btn-sm" name="actionQuadTree">Agregar</button>
                 <div style="width:100%;margin: 15px 0;">
                   <h4>Precisión</h4>
                   <input type="text" name="precision" value="" class="span2" data-slider-min="1" data-slider-max="8" data-slider-step="1" data-slider-selection="after" style="width:200px">

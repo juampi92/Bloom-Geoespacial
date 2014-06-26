@@ -15,6 +15,10 @@ a {
 	border: solid 2px #199B9B;
 }
 
+.gradient > h3:first-child {
+	margin-top:0;
+}
+
 button.btn-color {
 	color: white;
 	background-color: #199B9B;
@@ -160,6 +164,10 @@ input.valid {
 	background:rgba(25,155,155,0.5);
 }
 
+input.error {
+	border: 1px solid red;
+}
+
 /* --- Geoespacial --- */
 #tab-geo > div {
 	margin: 70px auto 0;
@@ -209,8 +217,27 @@ input.valid {
 }
 
 canvas {
+	display:none;
 	/*width:0;
 	height:0;*/
+}
+
+.loading {
+	text-align: center;
+	margin:30px auto;
+}
+
+output {
+	line-height: 13px;
+	display:inline-block;
+  max-width: 80px;
+  overflow: hidden;
+}
+
+h4 {
+	border-bottom:2px solid lightgray;
+	margin-top:10px;
+	display:block;
 }
 
 .animated {
