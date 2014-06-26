@@ -23,7 +23,7 @@
 
 	function File(records, tablename) {
 		// LOGICA
-		this.cont = new Array();
+		this.cont = [];
 		this.size = records;
 		for (var index = 0; index < this.size; index++) {
 			this.cont.push(new Record(index,""));
@@ -43,7 +43,7 @@
 			return this.cont[index].value;
 		}
 		return null;
-	}
+	};
 
 	File.prototype.insert = function(data) {
 		var index = this.getIndex(data.key);
@@ -72,34 +72,31 @@
 		}
 
 		this.toggle.click();
-	}
+	};
 
 	File.prototype.getIndex = function(key) {
-		for (var index = 0; index < this.size; index++) {
-			if (this.cont[index].key == key) { 
-				return index; 
-			}
-		}
+		for (var index = 0; index < this.size; index++)
+			if (this.cont[index].key == key)
+				return index;
 		return -1;
-	}
+	};
 
 	File.prototype.contains = function (key) {
 		if (this.getIndex(key) == -1)
 			return false;
 		else
-			return true; 
-	}
+			return true;
+	};
 
 	File.prototype.emtpy = function (key) {
-		if (this.contains(key)) {
-			return (this.read(key) == "")
-		}
+		if (this.contains(key))
+			return (this.read(key) === '');
 		return false;
-	}
+	};
 
 	File.prototype.delete = function (key) {
 		this.insert(new Record(key,""));
-	}
+	};
 
 	File.prototype.reorganize = function (diffile) {
 		for (var index = 0; index < diffile.cont.length; index++) {
@@ -107,7 +104,7 @@
 		}
 		diffile.clear(0);
 		this.desiluminate();
-	}
+	};
 
 	File.prototype.clear = function(records) {
 		this.desiluminate();
@@ -117,7 +114,7 @@
 			this.cont.push(new Record(index,""));
 		}
 		this.visual();
-	}
+	};
 
 	File.prototype.visual = function () {
 		this.table.empty();
@@ -147,7 +144,7 @@
 			key.innerHTML = this.cont[index].key;
 			value.innerHTML = this.cont[index].value;
 		}
-	}
+	};
 
 	File.prototype.iluminate = function(key) {
 		var index = this.getIndex(key);
@@ -164,14 +161,14 @@
 				this.tab.scrollTo(posfila,800);
 			}
 		}
-	}
+	};
 
 	File.prototype.desiluminate = function() {
-		if (this.ilumined != null) {
+		if (this.ilumined !== null) {
 			(this.ilumined.children()).removeClass('iluminate');
 			this.ilumined = null;
 		}
-	}
+	};
 
 	//----------------------------------------------
 	// BLOOM FILTER
@@ -214,7 +211,7 @@
 			};
 
 			this.functions = keys;
-			this.bools = new Array();
+			this.bools = [];
 			this.ilumined = null;
 			this.boolmurmur = bm;
 			this.boolfnv = bf;
@@ -253,7 +250,7 @@
 				label.append(span);
 				this.els.resmod.push(span);
 				this.els.txt.append(label);
-				pos++
+				pos++;
 			}
 
 			span = $('<span style="margin-bottom: 0px; color: #199B9B;"> </span>');
@@ -303,7 +300,7 @@
 		},
 
 		evaluate : function(key) {
-			var values = new Array();
+			var values = [];
 			var pos = 0;
 			if (this.boolmurmur) {
 				values[pos] = murmur(key)%this.size;
@@ -314,8 +311,8 @@
 				pos++;
 			}
 			for (var i = 0; i < this.functions.length; i++) {
-			  values[pos] = (this.functions[i]*key)%this.size;
-			  pos++;
+				values[pos] = (this.functions[i]*key)%this.size;
+				pos++;
 			}
 			return values;
 		},
@@ -323,7 +320,7 @@
 		clear : function(size) {
 			this.desiluminate();
 			this.bools.splice(0, this.bools.length);
-			if ( size != undefined ) this.size = size;
+			if ( size !== undefined ) this.size = size;
 			for (var index = 0; index < this.size; index++) {
 				this.bools[index] = false;
 			}
@@ -338,7 +335,7 @@
 			var $row;
 			var cant = 0;
 			for (var i=0; i < this.size ; i++) {
-				if (cant == 0) {
+				if (cant === 0) {
 					$row = $('<tr></tr>');
 					this.els.bools.append($row);
 				}
@@ -358,7 +355,7 @@
 
 			for (var i = 0; i < this.els.resmod.length; i++) {
 				this.els.resmod[i].empty();
-				this.els.keymod[i].empty(); 
+				this.els.keymod[i].empty();
 				this.els.keymod[i].append('ID');
 			}
 		},
@@ -367,9 +364,10 @@
 			if (key != this.ilumined) {
 				this.desiluminate();
 				this.ilumined = key;
-				if (key != "") {
-					var values = this.evaluate(key);
-					for (var i = 0; i < values.length; i++) {
+				if (key !== '') {
+					var values = this.evaluate(key),
+						i;
+					for (i = 0; i < values.length; i++) {
 						this.els.bools.find('td[_id='+values[i]+']').addClass("iluminate");
 					}
 					
@@ -387,7 +385,7 @@
 						pos++;
 					}
 
-					var i = 0;
+					i = 0;
 
 					while (pos < values.length) {
 						this.els.resmod[i].empty();
@@ -395,7 +393,7 @@
 						this.els.keymod[i].empty();
 						this.els.keymod[i].append(key);
 						i++;
-						pos++;						
+						pos++;
 					}
 
 					this.els.res.css('color','#199B9B');
@@ -409,7 +407,7 @@
 						this.els.res.append('Positivo');
 					}
 					else {
-						this.els.res.empty(); 
+						this.els.res.empty();
 						this.els.res.append('Falso Positivo');
 						this.els.res.css('color','red');
 					}
@@ -418,14 +416,14 @@
 		},
 
 		desiluminate : function() {
-			if (this.ilumined != null) {
+			if (this.ilumined !== null) {
 				var values = this.evaluate(this.ilumined);
 				this.ilumined = null;
 				for (var i = 0; i < values.length; i++) {
 					this.els.bools.find('td[_id='+values[i]+']').removeClass("iluminate");
-				}		
+				}
 
-				if (this.boolmurmur) 
+				if (this.boolmurmur)
 					this.els.murmur.empty();
 				if (this.boolfnv)
 					this.els.fnv.empty();
@@ -438,7 +436,7 @@
 				}
 			}
 		}
-	}
+	};
 
 	bloom.init(45,[2,4,6],false,true);
 
@@ -447,70 +445,70 @@
 	//----------------------------------------------
 	
 	function murmur(str, seed) {
-	  var m = 0x5bd1e995;
-	  var r = 24;
-	  var h = seed ^ str.length;
-	  var length = str.length;
-	  var currentIndex = 0;
-	  
-	  while (length >= 4) {
-	    var k = UInt32(str, currentIndex);
-	    
-	    k = Umul32(k, m);
-	    k ^= k >>> r;
-	    k = Umul32(k, m);
+		var m = 0x5bd1e995,
+			r = 24,
+			h = seed ^ str.length,
+			length = str.length,
+			currentIndex = 0;
+		
+		while (length >= 4) {
+			var k = UInt32(str, currentIndex);
+			
+			k = Umul32(k, m);
+			k ^= k >>> r;
+			k = Umul32(k, m);
 	 
-	    h = Umul32(h, m);
-	    h ^= k;
+			h = Umul32(h, m);
+			h ^= k;
 	 
-	    currentIndex += 4;
-	    length -= 4;
-	  }
-	  
-	  switch (length) {
-	  case 3:
-	    h ^= UInt16(str, currentIndex);
-	    h ^= str.charCodeAt(currentIndex + 2) << 16;
-	    h = Umul32(h, m);
-	    break;
-	    
-	  case 2:
-	    h ^= UInt16(str, currentIndex);
-	    h = Umul32(h, m);
-	    break;
-	    
-	  case 1:
-	    h ^= str.charCodeAt(currentIndex);
-	    h = Umul32(h, m);
-	    break;
-	  }
+			currentIndex += 4;
+			length -= 4;
+		}
+		
+		switch (length) {
+		case 3:
+			h ^= UInt16(str, currentIndex);
+			h ^= str.charCodeAt(currentIndex + 2) << 16;
+			h = Umul32(h, m);
+			break;
+			
+		case 2:
+			h ^= UInt16(str, currentIndex);
+			h = Umul32(h, m);
+			break;
+			
+		case 1:
+			h ^= str.charCodeAt(currentIndex);
+			h = Umul32(h, m);
+			break;
+		}
 	 
-	  h ^= h >>> 13;
-	  h = Umul32(h, m);
-	  h ^= h >>> 15;
+		h ^= h >>> 13;
+		h = Umul32(h, m);
+		h ^= h >>> 15;
 	 
-	  return h >>> 0;
+		return h >>> 0;
 	}
 	 
 	function UInt32(str, pos) {
-	  return (str.charCodeAt(pos++)) +
-	         (str.charCodeAt(pos++) << 8) +
-	         (str.charCodeAt(pos++) << 16) +
-	         (str.charCodeAt(pos) << 24);
+		return (str.charCodeAt(pos++)) +
+					(str.charCodeAt(pos++) << 8) +
+					(str.charCodeAt(pos++) << 16) +
+					(str.charCodeAt(pos) << 24);
 	}
 	 
 	function UInt16(str, pos) {
-	  return (str.charCodeAt(pos++)) +
-	         (str.charCodeAt(pos++) << 8);
+		return (str.charCodeAt(pos++)) +
+				(str.charCodeAt(pos++) << 8);
 	}
 	 
 	function Umul32(n, m) {
-	  n = n | 0;
-	  m = m | 0;
-	  var nlo = n & 0xffff;
-	  var nhi = n >>> 16;
-	  var res = ((nlo * m) + (((nhi * m) & 0xffff) << 16)) | 0;
-	  return res;
+		n = n | 0;
+		m = m | 0;
+		var nlo = n & 0xffff;
+		var nhi = n >>> 16;
+		var res = ((nlo * m) + (((nhi * m) & 0xffff) << 16)) | 0;
+		return res;
 	}
 	 
 	//----------------------------------------------
@@ -518,31 +516,31 @@
 	//----------------------------------------------
 	
 	function fnv1s(str) {
-	  var bytes = stringToBytes(str);
-	  var hash = FNVINIT;
-	  for (var i=0; i < bytes.length; i++) {
-	    hash *= FNVPRIME;
-	    hash ^= bytes[i];
-	  }
-	  return Math.abs(hash);
+		var bytes = stringToBytes(str);
+		var hash = FNVINIT;
+		for (var i=0; i < bytes.length; i++) {
+			hash *= FNVPRIME;
+			hash ^= bytes[i];
+		}
+		return Math.abs(hash);
 	}
 
 	var FNVPRIME = 0x01000193;
 	var FNVINIT = 0x811c9dc5;
 
 	function stringToBytes(str) {
-	  var ch, st, re = [];
-	  for (var i = 0; i < str.length; i++) {
-	    ch = str.charCodeAt(i); 
-	    st = [];
-	    do {
-	      st.push( ch & 0xFF );
-	      ch = ch >> 8;
-	    }
-	    while ( ch );
-	    re = re.concat( st.reverse() );
-	  }
-	  return re;
+		var ch, st, re = [];
+		for (var i = 0; i < str.length; i++) {
+			ch = str.charCodeAt(i);
+			st = [];
+			do {
+				st.push( ch & 0xFF );
+				ch = ch >> 8;
+			}
+			while ( ch );
+			re = re.concat( st.reverse() );
+		}
+		return re;
 	}
 	
 	//--------------------------------------------------------------------------
@@ -603,7 +601,7 @@
 		}
 		else {
 			desiluminar();
-			if (key == "") { reset("insertkey"); }
+			if (key === '') { reset("insertkey"); }
 		}
 	}
 
@@ -613,11 +611,11 @@
 		reset("outvalue");
 
 		var key = $("#insertkey").val();
-		if (key == "") { desiluminar(); }
+		if (key === '') { desiluminar(); }
 
 		var value = $("#insertvalue").val();
-		if (value != "") { $("#insertvalue").addClass("valid") }
-		else { $("#insertvalue").removeClass("valid") }
+		if (value !== '') { $("#insertvalue").addClass("valid"); }
+		else { $("#insertvalue").removeClass("valid"); }
 	}
 
 	function readkeyinput() {
@@ -630,22 +628,28 @@
 		
 		if (enrango("readkey")) {
 			bloom.iluminate(key);
+			var value;
+
 			if (diff.contains(key)) {
 				diff.iluminate(key);
-				var value = diff.read(key);
-				if (value != "") {$("#outvalue").val('"'+value+'"'); }
-				else { $("#outvalue").val('VACIO'); }
+				value = diff.read(key);
+				if (value !== '')
+					$("#outvalue").val('"'+value+'"');
+				else
+					$("#outvalue").val('VACIO');
 				}
 			else {
 				main.iluminate(key);
-				var value = main.read(key);
-				if (value != "") { $("#outvalue").val('"'+value+'"'); }
-				else { $("#outvalue").val('VACIO'); } 
+				value = main.read(key);
+				if (value !== '')
+					$("#outvalue").val('"'+value+'"');
+				else
+					$("#outvalue").val('VACIO');
 			}
 		}
 		else {
-			desiluminar();	
-			if (key == "") { reset("readkey"); }
+			desiluminar();
+			if (key === '') reset("readkey");
 		}
 	}
 
@@ -659,12 +663,14 @@
 
 		if (enrango("deletkey")) {
 			bloom.iluminate(key);
-			if (diff.contains(key)) { diff.iluminate(key); }				
-			else { main.iluminate(key); }
+			if (diff.contains(key))
+				diff.iluminate(key);
+			else
+				main.iluminate(key);
 		}
 		else {
 			desiluminar();
-			if (key == "") { reset("deletkey"); }
+			if (key === '') reset("deletkey");
 		}
 	}
 
@@ -672,7 +678,7 @@
 	(function(){
 
 		$("#insertkey").on("change", function() {
-  			insertkeyinput();
+				insertkeyinput();
 		});
 
 		$("#insertkey").keyup(function(){
@@ -684,7 +690,7 @@
 		});
 
 		$("#insertvalue").on("change", function() {
-  			insertvalueinput();
+				insertvalueinput();
 		});
 
 		$("#readkey").keyup(function(){
@@ -692,7 +698,7 @@
 		});
 
 		$("#readkey").on("change", function() {
-  			readkeyinput();
+				readkeyinput();
 		});
 
 		$("#deletkey").keyup(function(){
@@ -700,7 +706,7 @@
 		});
 
 		$("#deletkey").on("change", function() {
-  			deletkeyinput();
+				deletkeyinput();
 		});
 
 		$("#btninsert").on("click", function()  {
@@ -712,7 +718,7 @@
 			var value = $("#insertvalue").val();
 
 			if (enrango("insertkey")) {
-				if (value != "") {
+				if (value) {
 					desiluminar();
 					reset("insertkey");
 					reset("insertvalue");
@@ -760,15 +766,15 @@
 	//----------------------------------------------
 
 	function getPosition(element) {
-	    var xPosition = 0;
-	    var yPosition = 0;
-	      
-	    while (element) {
-	        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
-	        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
-	        element = element.offsetParent;
-	    }
-	    return { x: xPosition, y: yPosition };
+			var xPosition = 0;
+			var yPosition = 0;
+				
+			while (element) {
+					xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+					yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+					element = element.offsetParent;
+			}
+			return { x: xPosition, y: yPosition };
 	}
 
 	var Mapa = {
@@ -787,19 +793,19 @@
 
 					if ( indice < index ) break;
 					if ( indice == index ) { i++; break; }
-				};
+				}
 				this.valores.splice(i, 0,[indice,elemento]);
 			},
 			buscar: function(sector){
-				var out = new Array();
-				for (i = 0; i < this.valores.length; i++) {
+				var out = [];
+				for (var i = 0; i < this.valores.length; i++) {
 					var index = ""+this.valores[i][0];
 					if ( index.length > sector.length )
 						index = index.substr(0,sector.length);
 
 					if ( sector == index ) out.push(this.valores[i][0]);
 					if ( sector < index ) break;
-				};
+				}
 				return out;
 			}
 		},
@@ -864,17 +870,17 @@
 			
 			this.els.canvas.addEventListener("mousemove", function(e){
 				var parentPosition = getPosition(e.currentTarget),
-			    	x = Math.min(e.clientX - parentPosition.x+3,self.els.canvas.width),
-			    	y = Math.min(e.clientY - parentPosition.y+4,self.els.canvas.height);
+						x = Math.min(e.clientX - parentPosition.x+3,self.els.canvas.width),
+						y = Math.min(e.clientY - parentPosition.y+4,self.els.canvas.height);
 
-			    self.els.coords.$x.val (x);
-			    self.els.coords.$y.val (y);
+					self.els.coords.$x.val (x);
+					self.els.coords.$y.val (y);
 
-			    var coordenadas = self.toCoords(x,y),
-			    	long = coordenadas.long,
-			    	lat = coordenadas.lat;
-			    self.els.coords.$long.val(long);
-			    self.els.coords.$lat.val(lat);
+					var coordenadas = self.toCoords(x,y),
+						long = coordenadas.long,
+						lat = coordenadas.lat;
+					self.els.coords.$long.val(long);
+					self.els.coords.$lat.val(lat);
 			}, false);
 
 			this.els.$modo.on('click','label',function(e){
@@ -894,9 +900,9 @@
 
 			$(this.els.canvas).on('click',function(e){
 				var x = self.els.coords.$x.val(),
-				    y = self.els.coords.$y.val();
+						y = self.els.coords.$y.val();
 
-				if ( self.mode == 0 )
+				if ( self.mode === 0 )
 					self.addElemento(x,y);
 				else
 					self.buscarSector(x,y);
@@ -919,34 +925,34 @@
 		},
 		addElemento: function(x,y){
 			var coords = this.toCoords(x,y),
-		    	indice = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
+					indice = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
 
-		    this.quads.agregar( indice , coords );
+				this.quads.agregar( indice , coords );
 
-		    this.renderElemento(x,y);
+				this.renderElemento(x,y);
 
-		    var $li = $('<li></li>').html( indice ).addClass("new");
-		    this.els.tabs.$values.prepend( $li );
-		    $li.focus().removeClass("new");
+				var $li = $('<li></li>').html( indice ).addClass("new");
+				this.els.tabs.$values.prepend( $li );
+				$li.focus().removeClass("new");
 		},
 		buscarSector: function(x,y){
 			var coords = this.toCoords(x,y),
-		    	sector = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
+					sector = quadtree.encode( {lat: coords.lat ,lng: coords.long } , this.precision);
 
-		    // Mostrar sector en algun lado
-		    this.els.tabs.$busqueda.parent().children('h4').html(sector);
+				// Mostrar sector en algun lado
+				this.els.tabs.$busqueda.parent().children('h4').html(sector);
 
-		    this.render(); // Dibujo nuevamente toda la grilla con sus puntos
+				this.render(); // Dibujo nuevamente toda la grilla con sus puntos
 
-		    this.renderSector(sector);
-		    var search = this.quads.buscar(sector);
+				this.renderSector(sector);
+				var search = this.quads.buscar(sector);
 
 			this.els.tabs.$busqueda.empty();
-		    for (var i = 0; i < search.length; i++) {
-		    	var $li = $('<li></li>').html( search[i] ).addClass("new");
-			    this.els.tabs.$busqueda.prepend( $li );
-			    $li.focus().removeClass("new");
-		    };
+				for (var i = 0; i < search.length; i++) {
+					var $li = $('<li></li>').html( search[i] ).addClass("new");
+					this.els.tabs.$busqueda.prepend( $li );
+					$li.focus().removeClass("new");
+				}
 		},
 		toCartesiano: function(long,lat){
 			return { x: (( long + 180 ) * this.imagen.width ) / 360 , y:(( -lat + 90 ) * this.imagen.height) / 180 };
@@ -963,7 +969,7 @@
 					carts = this.toCartesiano(coords.origin.lng,coords.origin.lat);
 
 				this.renderElemento(carts.x,carts.y);
-			};
+			}
 		},
 		renderCuadricula: function(){
 			var its = Math.pow(2,this.precision), // iteraciones
@@ -976,7 +982,7 @@
 			for( var x = 0 ; x < this.imagen.width ; x += x_var ){
 				context.moveTo(x,0);
 				context.lineTo(x,this.imagen.height);
-			};
+			}
 			// Vertical
 			for( var y = 0 ; y < this.imagen.height ; y += y_var ){
 				context.moveTo(0,y);
@@ -989,12 +995,12 @@
 		renderElemento: function(x,y){
 			var context = this.els.canvas.getContext("2d");
 			context.beginPath();
-		    context.arc(x,y, 10, 0, 2 * Math.PI, false);
-		    context.fillStyle = 'red';
-		    context.fill();
-		    context.lineWidth = 1;	
-		    context.strokeStyle = 'white';
-		    context.stroke();
+				context.arc(x,y, 10, 0, 2 * Math.PI, false);
+				context.fillStyle = 'red';
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = 'white';
+				context.stroke();
 		},
 		renderSector: function(sector){
 			var zona = quadtree.bbox(sector),
@@ -1011,13 +1017,13 @@
 				};
 
 			context.beginPath();
-		    context.rect(pos.x,pos.y,pos.w,pos.h);
-		    context.lineWidth = 3;
-		    context.strokeStyle = 'yellow';
-		    context.stroke();
+				context.rect(pos.x,pos.y,pos.w,pos.h);
+				context.lineWidth = 3;
+				context.strokeStyle = 'yellow';
+				context.stroke();
 		},
 		reset: function(){
-			this.quads.valores = new Array();
+			this.quads.valores = [];
 
 			this.els.tabs.$values.empty();
 			this.els.tabs.$busqueda.empty();
@@ -1049,7 +1055,7 @@
 		$menu.find('a[href=#'+id+']').parent().addClass("active");
 		$('#tab-'+id).show();
 
-	};
+	}
 	showSector.selected = "";
 
 	// Listeners
@@ -1060,22 +1066,22 @@
 
 		// Bloom solapas Db-Diff
 		var $bloomTabs = $("#bloom-tabs-cont");
-        $('#bloom-tabs-menu a').click(function (e) {
-          e.preventDefault();
-          $bloomTabs.find('.active').removeClass("active");
-          $bloomTabs.find('#' + $(this).data("target") ).addClass("active");
-        });
+				$('#bloom-tabs-menu a').click(function (e) {
+					e.preventDefault();
+					$bloomTabs.find('.active').removeClass("active");
+					$bloomTabs.find('#' + $(this).data("target") ).addClass("active");
+				});
 
-        $("ul.navbar-right > li > a[rol='reiniciar']").click(function(e){
-        	switch( showSector.selected ){
-        		case "bloom":
-        			bloomreset();
-        		break;
-        		case "geo":
-        			Mapa.reset();
-        		break;
-        	}
-        });
+				$("ul.navbar-right > li > a[rol='reiniciar']").click(function(e){
+					switch( showSector.selected ){
+						case "bloom":
+							bloomreset();
+						break;
+						case "geo":
+							Mapa.reset();
+						break;
+					}
+				});
 	})();
 
 })();
