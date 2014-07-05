@@ -557,8 +557,7 @@
 		var fnv = $('#fnv').is(':checked');
 		var bloomsize = parseInt($('#bloom-size').val());
 		var kvalues = getKvalues();
- 		if ( ($.isNumeric(mainsize)) && (mainsize > 0) && ($.isNumeric(bloomsize)) && (bloomsize > 0) ) {
-			main.clear(mainsize);
+		if ( ($.isNumeric(mainsize)) && (mainsize > 0) && ($.isNumeric(bloomsize)) && (bloomsize > 0) && ( (kvalues.length > 0) || (murmur) || (fnv) )  ) {			main.clear(mainsize);
 			diff.clear(0);
 			bloom.init(bloomsize,kvalues,murmur,fnv);
 			$('#bloomModal').modal('hide');
