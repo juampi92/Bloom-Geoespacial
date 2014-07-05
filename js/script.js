@@ -154,11 +154,8 @@
 			if (index != -1) {
 				this.ilumined = fila;
 				(fila.children()).addClass('iluminate');
-				// SCROLLEAR
+				// Toggle
 				this.toggle.click();
-				var pos = key-5; if (pos < 0) pos = 0;
-				var posfila = this.table.find('tr:eq('+pos+')');
-				this.tab.scrollTo(posfila,800);
 			}
 		}
 	};
@@ -275,19 +272,23 @@
 				this.els.bools.find('td[_id='+values[i]+']').addClass("true");
 			}
 
+			var unusedrecord = (main.size - diff.size) / main.size;
+
 			this.contenedores.m.empty(); this.contenedores.m.append(main.size);
 			this.contenedores.d.empty(); this.contenedores.d.append(diff.size);
-			this.contenedores.u.empty(); this.contenedores.u.append(Math.round(100*(main.size - diff.size)/main.size) + '%');
+			this.contenedores.u.empty(); this.contenedores.u.append(Math.round(100*unusedrecord) + '%');
 			
 			var total = 0;
 			for (var i = 0; i < this.size; i++) {
 				if (this.bools[i]) { total++;}
 			}
 			var usedbits = total/this.size;
-			this.contenedores.o.empty(); this.contenedores.o.append(Math.round(100*(usedbits)) + "%");
+			this.contenedores.o.empty(); this.contenedores.o.append(Math.round(100*usedbits) + "%");
 			
-			var unusedrecord = (main.size - diff.size) / main.size;
-			var prob = Math.round(100*(unusedrecord*Math.pow(usedbits,2)));
+			var cantfunc = this.functions.length;
+			if (this.boolmurmur) { cantfunc++; }
+			if (this.boolfnv) { cantfunc++; }
+			var prob = Math.round( 100 * ( unusedrecord * Math.pow ( usedbits , cantfunc ) ) );
 			this.contenedores.f.empty(); this.contenedores.f.append(prob + "%");
 		},
 
@@ -438,7 +439,7 @@
 		}
 	};
 
-	bloom.init(45,[2,4,6],false,true);
+	bloom.init(21,[],true,true);
 
 	//----------------------------------------------
 	// FUNCION DE HASH - MURMUR 
@@ -551,14 +552,38 @@
 
 	// FUNCIONES
 	function bloomreset() {
-		main.clear(main.size);
-		diff.clear(0);
-		bloom.init(5,[82,32],true,true);
-		reset("insertkey");
-		reset("deletkey");
-		reset("outvalue");
-		reset("insertvalue");
-		reset("readkey");
+		var mainsize = parseInt($('#main-size').val());
+		var murmur = $('#murmur').is(':checked');
+		var fnv = $('#fnv').is(':checked');
+		var bloomsize = parseInt($('#bloom-size').val());
+		var kvalues = getKvalues();
+ 		if ( ($.isNumeric(mainsize)) && (mainsize > 0) && ($.isNumeric(bloomsize)) && (bloomsize > 0) ) {
+			main.clear(mainsize);
+			diff.clear(0);
+			bloom.init(bloomsize,kvalues,murmur,fnv);
+			$('#bloomModal').modal('hide');
+		}
+	}
+
+	function getKvalues() {
+		var texto = $('#kvalues').val();
+		var aux = 0;
+		var valores = [];
+		for (var i = 0; i < texto.length; i++) {
+			if ($.isNumeric(texto.charAt(i))) {
+				aux = aux*10 + parseInt(texto.charAt(i));
+			}
+			else {
+				if (aux != 0) {
+					valores.push(aux);
+					aux = 0;
+				}
+			}
+		}
+		if (aux != 0) {
+			valores.push(parseInt(aux));
+		}
+		return valores;
 	}
 
 	function reset(id) {
@@ -633,7 +658,7 @@
 			if (diff.contains(key)) {
 				diff.iluminate(key);
 				value = diff.read(key);
-				if (value !== '')
+				if (value != '')
 					$("#outvalue").val('"'+value+'"');
 				else
 					$("#outvalue").val('VACIO');
@@ -674,6 +699,40 @@
 		}
 	}
 
+	function mainsizeinput() {
+		var input =  $("#main-size");
+		var valor = $(input).val();
+		if (valor == '') {
+			$(input).removeClass("invalid");
+			$(input).removeClass("valid");
+		}
+		else if (!($.isNumeric(valor))) {
+			$(input).addClass("invalid");
+			$(input).removeClass("valid");
+		}
+		else {
+			$(input).addClass("valid");
+			$(input).removeClass("invalid");
+		}
+	}
+	
+	function bloomsizeinput() {
+		var input =  $("#bloom-size");
+		var valor = $(input).val();
+		if (valor == '') {
+			$(input).removeClass("invalid");
+			$(input).removeClass("valid");
+		}
+		else if (!($.isNumeric(valor))) {
+			$(input).addClass("invalid");
+			$(input).removeClass("valid");
+		}
+		else {
+			$(input).addClass("valid");
+			$(input).removeClass("invalid");
+		}
+	}
+
 	// LISTENERS
 	(function(){
 
@@ -690,7 +749,7 @@
 		});
 
 		$("#insertvalue").on("change", function() {
-				insertvalueinput();
+			insertvalueinput();
 		});
 
 		$("#readkey").keyup(function(){
@@ -706,7 +765,23 @@
 		});
 
 		$("#deletkey").on("change", function() {
-				deletkeyinput();
+			deletkeyinput();
+		});
+
+		$("#main-size").keyup(function(){
+			mainsizeinput();
+		});
+
+		$("#main-size").on("change", function(){
+			mainsizeinput();
+		});
+
+		$("#bloom-size").keyup(function(){
+			bloomsizeinput();
+		});
+
+		$("#bloom-size").on("change", function(){
+			bloomsizeinput();
 		});
 
 		$("#btninsert").on("click", function()  {
@@ -748,17 +823,19 @@
 				diff.delete(key);
 				bloom.insert(key);
 			}
-			else {
-				// HACER ---> WARNING DE KEY INVALIDA
-			}
 		});
 
 		$("#btnreorganize").on("click", function()  {
 			main.desiluminate();
 			main.reorganize(diff);
-			bloom.clear(19);
+			bloom.clear(bloom.size);
+		});
+
+		$("#reset-bloom").on("click", function()  {
+			bloomreset();
 		});
 		
+
 	})();
 
 	//----------------------------------------------
@@ -851,7 +928,6 @@
 				self.loaded = true;
 
 				self.els.$img.attr("src","assets/mundo.jpg").load(function(){
-					console.log(self.els.$img.width,this.width,this);
 					self.els.$img.width = self.imagen.width = self.els.canvas.width = this.width;
 					self.els.$img.height = self.imagen.height = self.els.canvas.height = this.height;
 
@@ -1141,7 +1217,7 @@
 				$("ul.navbar-right > li > a[rol='reiniciar']").click(function(e){
 					switch( showSector.selected ){
 						case "bloom":
-							bloomreset();
+							$('#bloomModal').modal('show');
 						break;
 						case "geo":
 							Mapa.reset();

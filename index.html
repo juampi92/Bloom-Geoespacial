@@ -127,6 +127,32 @@
             </div>
           </div>
         </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="bloomModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Opciones del Filtro Bloom</h4>
+              </div>
+              <div class="modal-body">
+                <span style='font-weight: bold;'>Activar las funciones Hash predefinidas que se quieran utilizar:</span> <br>
+                <input type="checkbox" id="murmur"> Funcion Hash Murmur </input><br>
+                <input type="checkbox" id="fnv"> Funcion Hash Fowler–Noll–Vo </input> <br></br>
+                <span style="font-weight: bold;">Tamaño del Main File deseado:</span> <br>
+                <input id="main-size" type="text" class="form-control" style="max-width:150px;" placeholder="ej: 100"></input><br></br>
+                <span style="font-weight: bold;">Tamaño del Filtro Bloom deseado:</span> <br>
+                <input id="bloom-size" type="text" class="form-control" style="max-width:150px;" placeholder="ej: 20"></input><br></br>
+                <span style="font-weight: bold;">Indique los valores K para funciones Hash del tipo <span style="font-style: italic; font-weight: normal">(K * ID) mod N</span> separados por una coma:</span> <br>
+                <input id="kvalues" type="text" class="form-control" style="max-width:150px;" placeholder="ej: 3, 15, 2"></input>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button id="reset-bloom" type="button" class="btn btn-primary">Reiniciar</button>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- /Filtro Bloom -->
         <!--***************************
               Pestaña Indice Geoespacial
